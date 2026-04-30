@@ -1,14 +1,18 @@
 // Netlify Function · runs an actual synthetic respondent study against the
-// supplied stimulus using Claude Sonnet 4.6 (vision + structured JSON output).
+// supplied stimulus using a two-stage pipeline:
 //
-// The function does ONE thing per request: gates the call behind a server-side
-// password check, then makes a single Messages API call that returns a fully
-// structured study report — vision-described stim, KPIs, resonance scorecard,
-// themed positives/negatives, persona verbatims, and a strategic recommendation.
+//   Stage 1 — N respondents.  Split N into chunks of CHUNK_SIZE (10) and run
+//   them in parallel against Claude Haiku 4.5 (fast, ~200 tok/s).  Each chunk
+//   produces 10 respondents (persona + sentiment + first-person verbatim +
+//   likes + dislikes).  Wall-clock time is dominated by the slowest chunk —
+//   ~5–8 s — not by N.
 //
-// Single Claude call instead of N parallel persona calls so we fit comfortably
-// inside Netlify's 26 s sync-function ceiling — the model generates the whole
-// cohort and the aggregated read in one response.
+//   Stage 2 — Aggregate.  Single Claude Sonnet 4.6 call that takes the full
+//   respondent list as input and produces the executive-ready report (KPIs,
+//   resonance scorecard, themed positives / negatives, strategic rec).
+//
+// Both stages share a cached system prompt so repeat runs are cheap.  The full
+// pipeline fits inside Netlify Pro's 26 s sync ceiling for N up to ~100.
 
 import Anthropic from '@anthropic-ai/sdk'
 import crypto from 'node:crypto'
@@ -16,64 +20,99 @@ import crypto from 'node:crypto'
 // SHA-256 of the access password ("Iceman9!!"). Compared in constant time.
 const ACCESS_HASH = 'f91bc5e40613290361afec770c0ad4a0f47533483ee3e56a4e2b9df0d8c82dbd'
 
-const SYSTEM_PROMPT = `You are running a synthetic respondent study for Hotspex, a brand-research firm.
-Your job is to simulate a cohort of real Canadian consumers reacting to a stimulus, then
-codify their reactions into a polished executive-ready report.
+const CHUNK_SIZE = 10
+const HARD_CAP = 100  // sync function ceiling — beyond this we'd need a background fn
 
-You operate inside the Hotspex Synthetic methodology stack:
+const RESP_SYSTEM_PROMPT = `You are running ONE chunk of a Hotspex Synthetic respondent study.
+Hotspex is a Canadian brand-research firm. Each "respondent" is a synthetic Canadian
+consumer reacting to the supplied stimulus, grounded in:
+  • Census 2021 / Statistics Canada PUMF demographics
+  • Ethosense — the Hotspex proprietary audience-science platform of 80 pre-curated
+    Canadian audience segments (attitudinal, brand affinities, media diet)
+  • Real verbatim phrasing patterns from past Hotspex fieldwork in the same category
+  • Hotspex emotional zones (Competent · Trustworthy · Familiar · Nurturing · Friendly ·
+    Fun · Interesting · Inspiring)
 
-1. PERSONA GROUNDING — every synthetic respondent is grounded in four layers:
-   (a) Census / Statistics Canada PUMF demographics, (b) Ethosense attitudinal
-   audience segmentation (the proprietary Hotspex audience-science platform —
-   80 pre-curated Canadian segments), (c) prior brand-tracking history if available,
-   and (d) real verbatim phrasing patterns from past Hotspex fieldwork in the same category.
+Generate respondents who are DEMOGRAPHICALLY DIVERSE within the supplied audience profile —
+mix of ages, regions (ON / QC / BC / AB / Atlantic), genders, income levels, and life stages
+that fit the brief. Each respondent's reaction must be SPECIFIC to what's actually in the
+stimulus, in real-Canadian-consumer cadence — not generic ad-language. The verbatims should
+sound like real human reactions: some short, some longer; some enthusiastic, some skeptical,
+some on the fence.
 
-2. RESPONSE STYLE — respondents speak in first-person, in real-Canadian-consumer cadence.
-   Reactions are specific to the stimulus on screen — not generic platitudes. Pull verbatims
-   from the actual emotional register of the audience profile (e.g. a 58-year-old pre-retiree
-   does not sound like a 26-year-old Gen Z saver).
+CRITICAL: respondents must SPAN the sentiment range. Roughly 40–55% positive, 25–35% mixed,
+15–30% negative — unless the brief tells you the audience is heavily skewed. Do NOT generate
+a chunk where every respondent loves the stim, or every respondent hates it. Real consumers
+disagree.
 
-3. SCORING — score the stimulus on the Hotspex Resonance attribute battery:
-   Relevance · Distinctiveness · Memorability (T2B percentages, with realistic pre/post lift).
-   Plus the aggregate Hotspex Concept Score (0–200 scale; 100 = average; 110+ "builds the brand";
-   below 90 "doesn't build"). Component appeal T2B (overall liking). Positive sentiment %.
-   Brand mentions in open-ends %.
+Output JSON only — no preamble.`
 
-4. THEMES — codify open-end reactions into 3–5 dominant POSITIVE themes and 3–5 dominant
-   NEGATIVE themes. Each theme should be a short noun-phrase (5–10 words) and accompanied by
-   the % of synthetic respondents who hit that theme. Themes must be SPECIFIC to what's actually
-   in the stimulus — not generic ad-language.
-
-5. STRATEGIC RECOMMENDATION — one direct, decision-grade recommendation. Headline (12 words max,
-   imperative). Body (2–3 sentences, addresses the strategic decision the brand has to make).
-
-6. WATERMARKING — every output is synthetic and watermarked. Use to surface hypotheses and
-   stress-test concepts. Never as a substitute for fieldwork on go/no-go decisions.
-
-You will receive: the stimulus (image and/or text), a stimulus type, an audience description,
-and a sample size. Generate a single JSON report following the supplied schema.`
-
-const REPORT_SCHEMA = {
+const RESPONDENTS_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    stim_description: {
-      type: 'string',
-      description: 'A 2–3 sentence factual description of what the stimulus actually is — read off the image / text. No interpretation, no marketing-speak. This is the proof to the user that we actually looked at their stim.',
+    respondents: {
+      type: 'array',
+      description: `Exactly ${CHUNK_SIZE} respondents.`,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          first_name: { type: 'string', description: 'Realistic Canadian first name appropriate to demographics.' },
+          age: { type: 'integer', description: 'Age in years.' },
+          gender: { type: 'string', description: 'M / F / NB.' },
+          region: { type: 'string', description: 'Province + city/town size, e.g. "Toronto, ON" or "Suburban BC".' },
+          segment: { type: 'string', description: 'Ethosense segment label, e.g. "Pre-retiree professional", "Gen Z saver", "New Canadian family".' },
+          sentiment: { type: 'string', enum: ['positive', 'mixed', 'negative'] },
+          quote: { type: 'string', description: '1–4 sentences. First person. Real-consumer cadence. Specific to the stim.' },
+          likes: { type: 'array', items: { type: 'string' }, description: '0–3 specific things this respondent liked. Empty array if none.' },
+          dislikes: { type: 'array', items: { type: 'string' }, description: '0–3 specific things this respondent disliked. Empty array if none.' },
+        },
+        required: ['first_name', 'age', 'gender', 'region', 'segment', 'sentiment', 'quote', 'likes', 'dislikes'],
+      },
     },
-    headline: {
-      type: 'string',
-      description: 'A short executive title for the run, e.g. "Realie landing page · General population". Max 80 chars.',
-    },
+  },
+  required: ['respondents'],
+}
+
+const AGG_SYSTEM_PROMPT = `You are the senior research analyst on a Hotspex Synthetic study.
+A cohort of synthetic Canadian respondents has just reacted to a stimulus — you have their
+full verbatim record. Your job: codify that raw cohort data into an executive-ready report.
+
+You produce:
+  • A factual stim_description (2–3 sentences) that proves the analysis was grounded in
+    the actual stimulus
+  • A short headline for the run
+  • Hotspex KPIs (Concept Score 0–200, Component Appeal T2B, Positive sentiment %, Brand
+    mention %) — derived from the actual sentiment distribution and likes/dislikes density
+    in the cohort, NOT from imagination
+  • Resonance scorecard (Relevance / Distinctiveness / Memorability T2B + pre→post lift)
+  • 3–5 dominant positive themes (each: short noun phrase + % of cohort hitting it)
+  • 3–5 dominant negative themes (same shape)
+  • One direct, decision-grade strategic recommendation (12-word imperative headline +
+    2–3 sentence body)
+
+Rules:
+  - All percentages must reflect the actual cohort distribution you were handed
+  - Themes must be SPECIFIC to the stim — generic ad-language is a fail
+  - Concept Score: 110+ "Builds the brand", 90–110 "Average", <90 "Doesn't build"
+  - Output JSON only`
+
+const AGG_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    stim_description: { type: 'string', description: 'Factual 2–3 sentence description of the stim. Read what is on screen / in the text.' },
+    headline: { type: 'string', description: 'Short executive title (max 80 chars).' },
     kpis: {
       type: 'object',
       additionalProperties: false,
       properties: {
-        concept_score: { type: 'integer', description: 'Hotspex Concept Score, 0–200 scale; 100 = average.' },
-        concept_score_label: { type: 'string', description: 'One of: "Builds the brand" (≥110), "Average" (90–110), "Doesn\'t build" (<90).' },
-        component_appeal_t2b: { type: 'integer', description: 'Component appeal Top-2-Box %, 0–100.' },
-        positive_sentiment_pct: { type: 'integer', description: 'Positive sentiment in open-ends, 0–100.' },
-        brand_mention_pct: { type: 'integer', description: 'Unaided brand mention in open-ends, 0–100.' },
+        concept_score: { type: 'integer' },
+        concept_score_label: { type: 'string', description: '"Builds the brand" (≥110), "Average" (90–110), or "Doesn\'t build" (<90).' },
+        component_appeal_t2b: { type: 'integer' },
+        positive_sentiment_pct: { type: 'integer' },
+        brand_mention_pct: { type: 'integer' },
       },
       required: ['concept_score', 'concept_score_label', 'component_appeal_t2b', 'positive_sentiment_pct', 'brand_mention_pct'],
     },
@@ -82,7 +121,7 @@ const REPORT_SCHEMA = {
       additionalProperties: false,
       properties: {
         relevance_t2b: { type: 'integer' },
-        relevance_lift: { type: 'integer', description: 'pre→post lift in points; can be negative.' },
+        relevance_lift: { type: 'integer' },
         distinctiveness_t2b: { type: 'integer' },
         distinctiveness_lift: { type: 'integer' },
         memorability_t2b: { type: 'integer' },
@@ -92,68 +131,116 @@ const REPORT_SCHEMA = {
     },
     positive_themes: {
       type: 'array',
-      description: '3–5 most-cited positive themes, sorted by descending pct.',
       items: {
         type: 'object',
         additionalProperties: false,
-        properties: {
-          theme: { type: 'string', description: 'Short noun phrase, 5–12 words, specific to the stim.' },
-          pct: { type: 'integer', description: '% of synthetic respondents hitting this theme.' },
-        },
+        properties: { theme: { type: 'string' }, pct: { type: 'integer' } },
         required: ['theme', 'pct'],
       },
     },
     negative_themes: {
       type: 'array',
-      description: '3–5 most-cited negative themes, sorted by descending pct.',
       items: {
         type: 'object',
         additionalProperties: false,
-        properties: {
-          theme: { type: 'string', description: 'Short noun phrase, 5–12 words, specific to the stim.' },
-          pct: { type: 'integer' },
-        },
+        properties: { theme: { type: 'string' }, pct: { type: 'integer' } },
         required: ['theme', 'pct'],
-      },
-    },
-    verbatims: {
-      type: 'array',
-      description: '3 illustrative first-person verbatims sampled across the cohort. Mix of positive, mixed, and negative.',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          quote: { type: 'string', description: '1–3 sentences, first person, real-consumer cadence.' },
-          persona: { type: 'string', description: 'Short persona descriptor, e.g. "Pre-retiree · Suburban ON · F · 58".' },
-          sentiment: { type: 'string', enum: ['positive', 'mixed', 'negative'] },
-        },
-        required: ['quote', 'persona', 'sentiment'],
       },
     },
     recommendation: {
       type: 'object',
       additionalProperties: false,
       properties: {
-        headline: { type: 'string', description: 'Imperative. Max 12 words.' },
-        body: { type: 'string', description: '2–3 sentences. Direct, decision-grade.' },
+        headline: { type: 'string' },
+        body: { type: 'string' },
       },
       required: ['headline', 'body'],
     },
   },
-  required: ['stim_description', 'headline', 'kpis', 'resonance', 'positive_themes', 'negative_themes', 'verbatims', 'recommendation'],
+  required: ['stim_description', 'headline', 'kpis', 'resonance', 'positive_themes', 'negative_themes', 'recommendation'],
 }
 
 const json = (status, body) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const sha256 = (s) => crypto.createHash('sha256').update(s, 'utf8').digest('hex')
 
 const safeEqual = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false
   return crypto.timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'))
+}
+
+// Run one Haiku chunk, returning { respondents: [...10] }
+async function runChunk(client, brief, image, chunkIdx, totalChunks) {
+  const userBlocks = []
+  userBlocks.push({
+    type: 'text',
+    text: `STUDY BRIEF\n===========\n${brief}\n\nThis is chunk ${chunkIdx + 1} of ${totalChunks}. Generate exactly ${CHUNK_SIZE} respondents reacting to the stimulus. Each chunk should produce a different mix of demographics within the audience profile so the full cohort is diverse.`,
+  })
+  if (image) {
+    userBlocks.push({
+      type: 'image',
+      source: { type: 'base64', media_type: image.media_type, data: image.data },
+    })
+    userBlocks.push({
+      type: 'text',
+      text: `↑ The image above IS the stimulus. Your respondents are reacting to what's actually in this image — read it carefully (brand, copy, layout, value prop).`,
+    })
+  }
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 3000,
+    system: [{ type: 'text', text: RESP_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+    messages: [{ role: 'user', content: userBlocks }],
+    output_config: { format: { type: 'json_schema', schema: RESPONDENTS_SCHEMA } },
+  })
+
+  const textBlock = response.content.find((b) => b.type === 'text')
+  if (!textBlock) throw new Error(`Chunk ${chunkIdx}: no text block`)
+  const parsed = JSON.parse(textBlock.text)
+  return { respondents: parsed.respondents || [], usage: response.usage }
+}
+
+// One Sonnet aggregation call over the full respondent list
+async function runAggregation(client, brief, image, respondents) {
+  const cohortDigest = respondents.map((r, i) => {
+    const likes = (r.likes || []).join(' / ')
+    const dislikes = (r.dislikes || []).join(' / ')
+    return `[#${i + 1}] ${r.first_name} ${r.age}${r.gender} · ${r.region} · ${r.segment} · ${r.sentiment.toUpperCase()}\n  "${r.quote}"\n  + ${likes || '—'}\n  − ${dislikes || '—'}`
+  }).join('\n\n')
+
+  const userBlocks = []
+  userBlocks.push({
+    type: 'text',
+    text: `STUDY BRIEF\n===========\n${brief}\n\nN = ${respondents.length} synthetic respondents.`,
+  })
+  if (image) {
+    userBlocks.push({
+      type: 'image',
+      source: { type: 'base64', media_type: image.media_type, data: image.data },
+    })
+    userBlocks.push({
+      type: 'text',
+      text: `↑ The stimulus respondents reacted to. Use this for the stim_description.`,
+    })
+  }
+  userBlocks.push({
+    type: 'text',
+    text: `COHORT DATA\n===========\n${cohortDigest}\n\nProduce the structured report. Percentages must reflect this cohort. Themes must be specific to the stim.`,
+  })
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4000,
+    system: [{ type: 'text', text: AGG_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+    messages: [{ role: 'user', content: userBlocks }],
+    output_config: { format: { type: 'json_schema', schema: AGG_SCHEMA } },
+  })
+
+  const textBlock = response.content.find((b) => b.type === 'text')
+  if (!textBlock) throw new Error('Aggregation: no text block')
+  return { agg: JSON.parse(textBlock.text), usage: response.usage }
 }
 
 export default async (req) => {
@@ -169,14 +256,12 @@ export default async (req) => {
     return json(400, { error: 'invalid_json' })
   }
 
-  const { password, stim_type, stim_text, image_base64, image_media_type, audience, sample_size = 100 } = body
+  const { password, stim_type, stim_text, image_base64, image_media_type, audience, sample_size = 50 } = body
 
-  // Server-side password check (the real gate — the client-side modal is just UX).
   if (!password || !safeEqual(sha256(password), ACCESS_HASH)) {
     return json(401, { error: 'unauthorized', message: 'Incorrect access password.' })
   }
 
-  // Require at least one usable form of stimulus.
   const hasImage = !!image_base64 && !!image_media_type
   const hasText = typeof stim_text === 'string' && stim_text.trim().length > 0
   if (!hasImage && !hasText) {
@@ -184,92 +269,68 @@ export default async (req) => {
   }
 
   const audienceDesc = (audience && audience.trim()) || 'General Canadian adult population (mainstream, mass-market, balanced across age/region/income).'
-  const N = Math.max(5, Math.min(200, parseInt(sample_size, 10) || 100))
+  let N = parseInt(sample_size, 10)
+  if (Number.isNaN(N) || N < CHUNK_SIZE) N = CHUNK_SIZE
+  if (N > HARD_CAP) N = HARD_CAP
+  // Round down to a multiple of CHUNK_SIZE
+  N = Math.floor(N / CHUNK_SIZE) * CHUNK_SIZE
+  const numChunks = N / CHUNK_SIZE
 
-  const userBlocks = []
-
-  // System-style framing of the request goes in the user turn for the model to pin against.
-  const briefHeader = [
-    `STUDY BRIEF`,
-    `============`,
-    `Stimulus type:  ${stim_type || 'unspecified'}`,
-    `Sample size:    ${N} synthetic respondents`,
+  const briefParts = [
+    `Stimulus type: ${stim_type || 'unspecified'}`,
+    `Sample size:    ${N} synthetic respondents (split across ${numChunks} parallel chunks of ${CHUNK_SIZE})`,
     ``,
     `AUDIENCE PROFILE`,
     audienceDesc,
-    ``,
-  ].join('\n')
-
-  userBlocks.push({ type: 'text', text: briefHeader })
-
-  if (hasImage) {
-    userBlocks.push({
-      type: 'image',
-      source: {
-        type: 'base64',
-        media_type: image_media_type,
-        data: image_base64,
-      },
-    })
-    userBlocks.push({
-      type: 'text',
-      text: `↑ The image above IS the stimulus respondents are reacting to. Read it carefully — note brand, copy, layout, imagery, value proposition, and anything else that's actually visible. Your stim_description must reflect what's actually on screen.`,
-    })
-  }
-
+  ]
   if (hasText) {
-    userBlocks.push({
-      type: 'text',
-      text: `STIMULUS TEXT / CONTEXT\n========================\n${stim_text.trim()}`,
-    })
+    briefParts.push('', 'STIMULUS TEXT / CONTEXT', stim_text.trim())
   }
+  const brief = briefParts.join('\n')
 
-  userBlocks.push({
-    type: 'text',
-    text: `Run the synthetic study and return the structured JSON report. Be specific to what's
-actually in this stimulus — generic ad-language is a fail. Make sure stim_description proves
-you actually looked at the stim.`,
-  })
+  const image = hasImage ? { media_type: image_media_type, data: image_base64 } : null
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+  const t0 = Date.now()
+
   try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
-      // Cache the (large, stable) system prompt so repeat runs are cheaper.
-      system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: userBlocks }],
-      output_config: {
-        format: { type: 'json_schema', schema: REPORT_SCHEMA },
-      },
-    })
+    // Stage 1 — parallel chunks of N/CHUNK_SIZE Haiku calls
+    const chunkPromises = Array.from({ length: numChunks }, (_, i) => runChunk(client, brief, image, i, numChunks))
+    const chunkResults = await Promise.all(chunkPromises)
+    const respondents = chunkResults.flatMap((c) => c.respondents).slice(0, N)
+    const t1 = Date.now()
 
-    // With output_config.format = json_schema, the first text block is the validated JSON.
-    const textBlock = response.content.find((b) => b.type === 'text')
-    if (!textBlock) {
-      return json(502, { error: 'no_text_block', message: 'Model returned no text block.', stop_reason: response.stop_reason })
+    if (respondents.length === 0) {
+      return json(502, { error: 'no_respondents', message: 'All chunks returned empty.' })
     }
 
-    let parsed
-    try {
-      parsed = JSON.parse(textBlock.text)
-    } catch (e) {
-      return json(502, { error: 'malformed_json', message: e.message, raw: textBlock.text.slice(0, 1000) })
-    }
+    // Stage 2 — single Sonnet aggregation call
+    const { agg, usage: aggUsage } = await runAggregation(client, brief, image, respondents)
+    const t2 = Date.now()
+
+    // Total token usage across all calls
+    const totalUsage = chunkResults.reduce(
+      (acc, c) => ({
+        input: acc.input + (c.usage?.input_tokens || 0),
+        output: acc.output + (c.usage?.output_tokens || 0),
+        cache_read: acc.cache_read + (c.usage?.cache_read_input_tokens || 0),
+      }),
+      { input: aggUsage?.input_tokens || 0, output: aggUsage?.output_tokens || 0, cache_read: aggUsage?.cache_read_input_tokens || 0 },
+    )
 
     return json(200, {
       ok: true,
-      sample_size: N,
+      sample_size: respondents.length,
       stim_type: stim_type || 'unspecified',
-      audience_summary: audienceDesc.slice(0, 200),
-      report: parsed,
-      usage: response.usage,
-      model: response.model,
+      audience_summary: audienceDesc.slice(0, 240),
+      report: { ...agg, respondents },
+      timing_ms: { chunks_ms: t1 - t0, aggregation_ms: t2 - t1, total_ms: t2 - t0 },
+      usage: totalUsage,
+      models: { chunks: 'claude-haiku-4-5', aggregation: 'claude-sonnet-4-6' },
       run_id: 'SX-' + Date.now().toString(36).toUpperCase(),
     })
   } catch (err) {
-    // Anthropic SDK exposes typed errors with a numeric .status
     const status = err?.status || 500
     return json(status, {
       error: err?.constructor?.name || 'api_error',
