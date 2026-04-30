@@ -1225,8 +1225,8 @@
       </p>
     </div>
 
-    <!-- Mock report card -->
-    <div class="reveal bg-white text-ink rounded-3xl p-8 shadow-glow">
+    <!-- Report card — populated by /api/run-study after a successful run; falls back to the sample below -->
+    <div id="reportCard" class="reveal bg-white text-ink rounded-3xl p-8 shadow-glow">
       <!-- Report header -->
       <div class="flex items-start justify-between gap-6 pb-6 border-b border-black/5">
         <div>
@@ -1617,16 +1617,64 @@
     })
   })
 
-  // ── Image upload preview ───────────────────────────────────
+  // ── Image upload — preview AND capture resized base64 for the API ──────────
+  // Netlify Functions cap request bodies at ~6 MB; resizing to max 1280px on the
+  // long edge at JPEG quality 0.85 keeps each image under ~400 KB without losing
+  // what the vision model can read off the screenshot.
+  let stimImage = null  // { base64: string, mediaType: string, label: string }
+
+  async function resizeImageToBase64(file) {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const fr = new FileReader()
+      fr.onload = () => resolve(fr.result)
+      fr.onerror = reject
+      fr.readAsDataURL(file)
+    })
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = reject
+      i.src = dataUrl
+    })
+    const MAX = 1280
+    let { width: w, height: h } = img
+    if (w > MAX || h > MAX) {
+      const scale = Math.min(MAX / w, MAX / h)
+      w = Math.round(w * scale)
+      h = Math.round(h * scale)
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = w; canvas.height = h
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+    const out = canvas.toDataURL('image/jpeg', 0.85)
+    // Strip the "data:image/jpeg;base64," prefix — server expects raw base64.
+    const base64 = out.split(',', 2)[1]
+    return { base64, mediaType: 'image/jpeg' }
+  }
+
   const fi = document.getElementById('fileInput')
-  fi?.addEventListener('change', () => {
+  fi?.addEventListener('change', async () => {
     const f = fi.files?.[0]
-    if (!f) return
+    if (!f) { stimImage = null; return }
+    if (f.size > 25 * 1024 * 1024) {
+      alert('Image exceeds 25 MB — try a smaller file.')
+      fi.value = ''
+      return
+    }
     const url = URL.createObjectURL(f)
     document.getElementById('thumb').src = url
-    document.getElementById('dropName').textContent = `${f.name} · ${Math.round(f.size / 1024)} KB`
+    document.getElementById('dropName').textContent = `${f.name} · ${Math.round(f.size / 1024)} KB · resizing…`
     document.getElementById('dropEmpty').classList.add('hidden')
     document.getElementById('dropFilled').classList.remove('hidden')
+    try {
+      const { base64, mediaType } = await resizeImageToBase64(f)
+      stimImage = { base64, mediaType, label: f.name }
+      const kb = Math.round((base64.length * 3) / 4 / 1024)
+      document.getElementById('dropName').textContent = `${f.name} · ${kb} KB ready`
+    } catch (e) {
+      stimImage = null
+      document.getElementById('dropName').textContent = `Failed to read ${f.name}`
+    }
   })
 
   // ── Audience grid ──────────────────────────────────────────
@@ -1667,29 +1715,19 @@
     i.focus()
   })
 
-  // ── Run button — simulated progress ─────────────────────────
-  const stages = [
-    'Queueing synthetic respondents…',
-    'Loading 80 audience segments + matched personas…',
-    'Briefing personas with stimulus + brand-voice context…',
-    'Running questionnaire across cohort (temp = 0)…',
-    'Codifying open-ends into themed positives / negatives…',
-    'Computing Resonance scorecard + Concept Score…',
-    'Generating strategic recommendations…',
-    'Finalizing PPT-ready report…',
-  ]
-  // ── Password gate (client-side soft gate) ──────────────────
-  // SHA-256 hash of the access password. Client-side gates are easily bypassed
-  // by anyone who view-sources, so this is a "are you serious?" filter, not security.
-  // For real auth, swap for a Netlify Function that validates server-side.
+  // ── Password gate ──────────────────────────────────────────
+  // Soft client gate (UX) gathers the password and stores it for the session.
+  // The function on the server side hashes and verifies it before doing any work,
+  // so this client-side check is a UX layer, not security.
   const GATE_HASH = 'f91bc5e40613290361afec770c0ad4a0f47533483ee3e56a4e2b9df0d8c82dbd'
   async function sha256(s) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
   }
-  function isUnlocked() { return sessionStorage.getItem('hsx_unlocked') === '1' }
-  function setUnlocked() {
-    sessionStorage.setItem('hsx_unlocked', '1')
+  function isUnlocked() { return !!sessionStorage.getItem('hsx_pw') }
+  function getPassword() { return sessionStorage.getItem('hsx_pw') || '' }
+  function setUnlocked(pw) {
+    sessionStorage.setItem('hsx_pw', pw)
     const lk = document.getElementById('runLockIcon'); if (lk) lk.style.display = 'none'
   }
   if (isUnlocked()) {
@@ -1725,7 +1763,7 @@
     try {
       const h = await sha256(pw)
       if (h === GATE_HASH) {
-        setUnlocked()
+        setUnlocked(pw)
         closeGate()
         startRun()
       } else {
@@ -1737,32 +1775,246 @@
     }
   })
 
-  function startRun() {
+  // ── Form readers ───────────────────────────────────────────
+  function getActiveStimType() {
+    const on = document.querySelector('#stimSeg button.on')
+    return on?.dataset?.stim || 'image'
+  }
+
+  function getStimText(type) {
+    const panel = document.getElementById('panel-' + type)
+    if (!panel) return ''
+    if (type === 'image') return ''  // image carries its own data
+    if (type === 'video') return panel.querySelector('input')?.value || ''
+    if (type === 'website') return panel.querySelector('input')?.value || ''
+    if (type === 'script') return panel.querySelector('textarea')?.value || ''
+    if (type === 'manifesto') {
+      const m = panel.querySelector('textarea')?.value || ''
+      const statements = Array.from(document.querySelectorAll('#brandStatements input')).map((i) => i.value).filter(Boolean)
+      const tail = statements.length ? '\n\nBrand statements (post-exposure T2B battery):\n- ' + statements.join('\n- ') : ''
+      return m + tail
+    }
+    return ''
+  }
+
+  function getSelectedAudienceLabels() {
+    const labels = Array.from(document.querySelectorAll('.a-tile.on')).map((b) => b.querySelector('.font-bold')?.textContent?.trim()).filter(Boolean)
+    const custom = document.querySelector('#try textarea[placeholder^="Or describe"]')?.value?.trim() || ''
+    if (custom) return custom
+    if (labels.length === 0) return 'General Canadian adult population.'
+    return 'Audience: ' + labels.join(', ') + '. Mainstream Canadian adults; recruit proportionally across the named segments.'
+  }
+
+  function getSampleSize() {
+    const n = parseInt(document.getElementById('ssize')?.value || '100', 10)
+    if (Number.isNaN(n)) return 100
+    return Math.min(200, Math.max(5, n))
+  }
+
+  // ── Run (real API call) ────────────────────────────────────
+  const stages = [
+    'Queueing synthetic respondents…',
+    'Loading audience segment + matched personas…',
+    'Briefing personas with stimulus + brand-voice context…',
+    'Running questionnaire across cohort (temp = 0)…',
+    'Codifying open-ends into themed positives / negatives…',
+    'Computing Resonance scorecard + Concept Score…',
+    'Generating strategic recommendations…',
+    'Finalizing report…',
+  ]
+
+  async function startRun() {
     const btn = document.getElementById('runBtn')
     const lbl = document.getElementById('runLabel')
     const prog = document.getElementById('runProgress')
     const stage = document.getElementById('runStage')
     const done = document.getElementById('runDone')
+
+    const stimType = getActiveStimType()
+    const stimText = getStimText(stimType)
+    if (!stimImage && !stimText.trim()) {
+      alert(stimType === 'image'
+        ? 'Drop an image (or pick a different stimulus type) before running.'
+        : 'Add some text in the field before running.')
+      return
+    }
+
     btn.disabled = true; btn.style.opacity = .6
     lbl.textContent = 'Running…'
     prog.classList.remove('hidden')
     done.classList.add('hidden')
+
+    // Step the progress copy alongside the live API call. The Sonnet 4.6 call
+    // typically returns in 8–20 s; we tick the message every ~1.5 s so the user
+    // doesn't think the page hung.
     let i = 0
+    let cancelled = false
     const tick = () => {
-      stage.textContent = stages[i] + ' (' + Math.round((i / stages.length) * 100) + '%)'
+      if (cancelled) return
+      stage.textContent = stages[Math.min(i, stages.length - 1)] + ' (' + Math.min(95, Math.round((i / stages.length) * 100)) + '%)'
       i++
-      if (i < stages.length) {
-        setTimeout(tick, 700 + Math.random() * 600)
-      } else {
-        stage.textContent = 'Complete · 200 / 200 respondents'
-        prog.classList.add('hidden')
-        done.classList.remove('hidden')
-        lbl.textContent = 'Run another →'
-        btn.disabled = false; btn.style.opacity = 1
-        document.getElementById('sample')?.scrollIntoView({ behavior: 'smooth' })
-      }
+      if (i < stages.length) setTimeout(tick, 1500 + Math.random() * 800)
     }
-    setTimeout(tick, 400)
+    tick()
+
+    try {
+      const res = await fetch('/api/run-study', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: getPassword(),
+          stim_type: stimType,
+          stim_text: stimText || null,
+          image_base64: stimImage?.base64 || null,
+          image_media_type: stimImage?.mediaType || null,
+          audience: getSelectedAudienceLabels(),
+          sample_size: getSampleSize(),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      cancelled = true
+      if (!res.ok) {
+        const msg = data?.message || data?.error || `HTTP ${res.status}`
+        stage.innerHTML = `<span class="text-rose-600">Run failed: ${msg}</span>`
+        btn.disabled = false; btn.style.opacity = 1
+        lbl.textContent = 'Run synthetic test →'
+        return
+      }
+      stage.textContent = `Complete · ${data.sample_size} respondents · ${data.model || ''}`
+      renderReport(data)
+      done.classList.remove('hidden')
+      lbl.textContent = 'Run another →'
+      btn.disabled = false; btn.style.opacity = 1
+      document.getElementById('sample')?.scrollIntoView({ behavior: 'smooth' })
+    } catch (e) {
+      cancelled = true
+      stage.innerHTML = `<span class="text-rose-600">Run failed: ${e?.message || 'network error'}</span>`
+      btn.disabled = false; btn.style.opacity = 1
+      lbl.textContent = 'Run synthetic test →'
+    }
+  }
+
+  // ── Render real report into the sample-report card ─────────
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  }
+
+  function ibiTone(score) {
+    if (score >= 110) return { color: 'text-mint-deep', label: '▲ Builds the brand' }
+    if (score >= 90)  return { color: 'text-amber-600', label: '— Average' }
+    return { color: 'text-rose-500', label: '▼ Doesn\'t build' }
+  }
+
+  function renderReport(data) {
+    const r = data.report
+    const card = document.getElementById('reportCard')
+    if (!card || !r) return
+    const tone = ibiTone(r.kpis.concept_score)
+
+    const themeRow = (t) => `<li class="flex justify-between border-b border-current/10 pb-2"><span>${escapeHtml(t.theme)}</span><span class="font-mono text-xs">${t.pct}%</span></li>`
+
+    const verbatimColor = (s) => s === 'positive' ? 'text-hot' : s === 'negative' ? 'text-rose-500' : 'text-plum'
+    const verbatimCard = (v) => `
+      <blockquote class="rounded-xl bg-white border border-black/5 p-4 text-sm">
+        <div class="text-3xl ${verbatimColor(v.sentiment)} leading-none mb-1">"</div>
+        <p class="leading-relaxed">${escapeHtml(v.quote)}</p>
+        <div class="text-[11px] text-ink-500 mt-3 font-mono">${escapeHtml(v.persona)}</div>
+      </blockquote>`
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-6 pb-6 border-b border-black/5">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="chip bg-hot/10 text-hot text-[10px] tracking-widest">[SYNTHETIC] · LIVE</span>
+            <span class="text-[11px] text-ink-500">Run #${escapeHtml(data.run_id)} · ${data.sample_size} personas · ${escapeHtml(data.model || '')}</span>
+          </div>
+          <h3 class="font-display font-bold text-3xl">${escapeHtml(r.headline)}</h3>
+          <p class="text-ink-500 mt-2 text-sm leading-relaxed max-w-3xl"><strong class="text-ink">What we saw:</strong> ${escapeHtml(r.stim_description)}</p>
+          <p class="text-ink-500 mt-1 text-sm">Audience: ${escapeHtml(data.audience_summary)} · Reproducible · ${escapeHtml(data.model || '')}</p>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <button class="px-3 py-2 rounded-lg bg-ink text-white text-xs font-medium" onclick="alert('PPT export — wire up later.')">Export PPT</button>
+          <button class="px-3 py-2 rounded-lg border border-black/10 text-xs font-medium" onclick="alert('Share — wire up later.')">Share</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold ${tone.color}">${r.kpis.concept_score}</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Hotspex Concept Score</div>
+          <div class="text-[10px] ${tone.color} mt-0.5 font-semibold">${tone.label}</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-hot">${r.kpis.component_appeal_t2b}%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Component Appeal · T2B</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-plum">${r.kpis.positive_sentiment_pct}%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Positive sentiment</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-ink">${r.kpis.brand_mention_pct}%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Brand mentions in open-ends</div>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-display font-bold text-lg">Resonance Scorecard</h4>
+          <span class="text-[11px] text-ink-500">Relevance · Distinctiveness · Memorability</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Relevance</span><span class="text-ink-500">${r.resonance.relevance_t2b}% T2B · <span class="${r.resonance.relevance_lift >= 0 ? 'text-mint-deep' : 'text-rose-500'} font-semibold">${r.resonance.relevance_lift >= 0 ? '+' : ''}${r.resonance.relevance_lift} pts pre→post</span></span></div>
+            <div class="bar"><span style="width: ${Math.max(2, Math.min(100, r.resonance.relevance_t2b))}%; background: linear-gradient(90deg,#00C896,#5A48F5)"></span></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Distinctiveness</span><span class="text-ink-500">${r.resonance.distinctiveness_t2b}% T2B · <span class="${r.resonance.distinctiveness_lift >= 0 ? 'text-mint-deep' : 'text-rose-500'} font-semibold">${r.resonance.distinctiveness_lift >= 0 ? '+' : ''}${r.resonance.distinctiveness_lift} pts pre→post</span></span></div>
+            <div class="bar"><span style="width: ${Math.max(2, Math.min(100, r.resonance.distinctiveness_t2b))}%; background: linear-gradient(90deg,#E61C26,#5A48F5)"></span></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Memorability</span><span class="text-ink-500">${r.resonance.memorability_t2b}% T2B · <span class="${r.resonance.memorability_lift >= 0 ? 'text-mint-deep' : 'text-rose-500'} font-semibold">${r.resonance.memorability_lift >= 0 ? '+' : ''}${r.resonance.memorability_lift} pts pre→post</span></span></div>
+            <div class="bar"><span style="width: ${Math.max(2, Math.min(100, r.resonance.memorability_t2b))}%; background: linear-gradient(90deg,#FFD53D,#E61C26)"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 grid md:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-mint/30 bg-mint/5 p-5 text-mint-deep">
+          <div class="text-xs uppercase tracking-wider font-bold mb-3">✓ Top positive themes</div>
+          <ul class="space-y-2 text-sm text-ink">
+            ${(r.positive_themes || []).map(themeRow).join('')}
+          </ul>
+        </div>
+        <div class="rounded-xl border border-hot/30 bg-hot/5 p-5 text-hot">
+          <div class="text-xs uppercase tracking-wider font-bold mb-3">⚠ Top negative themes</div>
+          <ul class="space-y-2 text-sm text-ink">
+            ${(r.negative_themes || []).map(themeRow).join('')}
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-display font-bold text-lg">Persona verbatims</h4>
+          <span class="text-[11px] text-ink-500">Sampled across ${data.sample_size} synthetic respondents</span>
+        </div>
+        <div class="grid md:grid-cols-3 gap-3">
+          ${(r.verbatims || []).map(verbatimCard).join('')}
+        </div>
+      </div>
+
+      <div class="mt-8 p-6 rounded-2xl bg-gradient-to-br from-ink to-ink/90 text-white relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-hot/40 blur-3xl"></div>
+        <div class="relative">
+          <div class="text-[10px] uppercase tracking-[0.2em] text-gold font-bold">Strategic Recommendation</div>
+          <h4 class="font-display font-bold text-xl mt-1.5">${escapeHtml(r.recommendation.headline)}</h4>
+          <p class="text-white/70 mt-2 text-sm leading-relaxed">${escapeHtml(r.recommendation.body)}</p>
+        </div>
+      </div>
+
+      ${data.usage ? `<div class="mt-6 text-[10px] text-ink-300 font-mono">tokens — input: ${data.usage.input_tokens || 0} · output: ${data.usage.output_tokens || 0}${data.usage.cache_read_input_tokens ? ' · cache hit: ' + data.usage.cache_read_input_tokens : ''}</div>` : ''}
+    `
   }
 
   document.getElementById('runBtn')?.addEventListener('click', () => {

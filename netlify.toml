@@ -1,5 +1,14 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@anthropic-ai/sdk"]
+
+# /v1/messages calls take 5–25 s; bump the sync ceiling to 26 s on Pro.
+[functions."run-study"]
+  timeout = 26
 
 [[headers]]
   for = "/*"

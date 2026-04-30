@@ -1,0 +1,13 @@
+{
+  "name": "hotspex-synthetic",
+  "version": "0.1.0",
+  "description": "Hotspex Synthetic — synthetic respondent studies grounded in Ethosense audience science.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.66.0"
+  }
+}
