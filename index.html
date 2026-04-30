@@ -1,0 +1,1682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hotspex Synthetic — Your audience. Pre-launch. In minutes.</title>
+<meta name="description" content="Synthetic studies grounded in real audience research. Test any stimulus — video, script, manifesto, website, image — against simulated cohorts in minutes." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          hot: { DEFAULT: '#E61C26', deep: '#B11018', light: '#FF3B45' },
+          plum: { DEFAULT: '#5A48F5', deep: '#3D2BC2', light: '#7B6DF7' },
+          ink: { DEFAULT: '#0A0A0F', 700: '#14141D', 500: '#1F1F2E', 300: '#7B7B8A', 100: '#E5E5EC' },
+          mint: { DEFAULT: '#00C896', deep: '#008A66' },
+          gold: { DEFAULT: '#FFD53D' },
+        },
+        fontFamily: {
+          sans: ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+          display: ['Space Grotesk', 'Inter', 'sans-serif'],
+        },
+        boxShadow: {
+          glow: '0 30px 80px -20px rgba(230, 28, 38, 0.45)',
+          plum: '0 30px 80px -20px rgba(90, 72, 245, 0.4)',
+          card: '0 1px 2px rgba(10,10,15,0.04), 0 8px 28px -8px rgba(10,10,15,0.08)',
+          pop: '0 20px 50px -10px rgba(10,10,15,0.18)',
+        },
+        animation: {
+          'spin-slow': 'spin 22s linear infinite',
+          'float': 'float 8s ease-in-out infinite',
+          'pulse-slow': 'pulse 5s cubic-bezier(0.4,0,0.6,1) infinite',
+          'shimmer': 'shimmer 3s linear infinite',
+          'gradient-x': 'gradient-x 8s ease infinite',
+        },
+        keyframes: {
+          float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-12px)' } },
+          shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+          'gradient-x': { '0%,100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } },
+        },
+      }
+    }
+  }
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: #FAFAFB; color: #0A0A0F; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.02em; }
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+  .gradient-text {
+    background: linear-gradient(120deg, #E61C26 0%, #5A48F5 60%, #00C896 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-x 10s ease infinite;
+  }
+  .hot-gradient { background: linear-gradient(135deg, #E61C26 0%, #FF3B45 50%, #5A48F5 100%); }
+  .plum-gradient { background: linear-gradient(135deg, #5A48F5 0%, #7B6DF7 100%); }
+  .mint-gradient { background: linear-gradient(135deg, #00C896 0%, #5A48F5 100%); }
+  .glow-ring { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 80px -20px rgba(230,28,38,0.6), 0 0 120px -40px rgba(90,72,245,0.5); }
+
+  /* Animated mesh gradient backdrop */
+  .mesh-bg {
+    background-color: #0A0A0F;
+    background-image:
+      radial-gradient(at 20% 20%, rgba(230,28,38,0.35) 0px, transparent 45%),
+      radial-gradient(at 80% 30%, rgba(90,72,245,0.4) 0px, transparent 50%),
+      radial-gradient(at 30% 90%, rgba(0,200,150,0.25) 0px, transparent 50%),
+      radial-gradient(at 90% 90%, rgba(255,213,61,0.18) 0px, transparent 45%);
+  }
+  .mesh-bg-light {
+    background-color: #FAFAFB;
+    background-image:
+      radial-gradient(at 8% 10%, rgba(230,28,38,0.08) 0px, transparent 40%),
+      radial-gradient(at 95% 20%, rgba(90,72,245,0.10) 0px, transparent 45%),
+      radial-gradient(at 60% 90%, rgba(0,200,150,0.06) 0px, transparent 40%);
+  }
+
+  .marquee { animation: marquee 38s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  .neural-dots { background-image: radial-gradient(rgba(255,255,255,.18) 1px, transparent 1px); background-size: 22px 22px; }
+  .neural-dots-light { background-image: radial-gradient(rgba(10,10,15,.08) 1px, transparent 1px); background-size: 22px 22px; }
+
+  /* Form polish */
+  .input { width:100%; border:1px solid rgba(10,10,15,0.12); background:#fff; border-radius:12px; padding:12px 14px; font-size:14px; transition: border-color .15s, box-shadow .15s; }
+  .input:focus { outline: none; border-color: #5A48F5; box-shadow: 0 0 0 4px rgba(90,72,245,0.15); }
+  .chip { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 10px; font-size:11px; font-weight:600; }
+  .btn-primary { background: linear-gradient(135deg, #E61C26, #B11018); color: white; padding: 14px 24px; border-radius: 14px; font-weight: 600; transition: transform .15s, box-shadow .15s; box-shadow: 0 12px 30px -10px rgba(230,28,38,0.5); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgba(230,28,38,0.65); }
+  .btn-ghost { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: white; padding: 14px 22px; border-radius: 14px; font-weight: 500; transition: background .15s; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.12); }
+  .btn-dark { background: #0A0A0F; color: white; padding: 14px 22px; border-radius: 14px; font-weight: 500; transition: transform .15s; }
+  .btn-dark:hover { transform: translateY(-1px); }
+
+  /* Tab chips */
+  .seg { display:inline-flex; gap:4px; padding:4px; background: #F0F0F4; border-radius: 12px; }
+  .seg button { padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 500; color: #1F1F2E; transition: background .15s, color .15s; }
+  .seg button.on { background: #0A0A0F; color: white; }
+
+  /* Audience tile */
+  .a-tile { border:1px solid rgba(10,10,15,0.08); background: white; border-radius: 14px; padding: 14px; transition: all .15s; cursor:pointer; }
+  .a-tile:hover { border-color: rgba(10,10,15,0.18); transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(10,10,15,0.1); }
+  .a-tile.on { border-color: #0A0A0F; background: #0A0A0F; color: white; }
+  .a-tile.on .a-tile-desc { color: rgba(255,255,255,0.7); }
+
+  /* Loading bar */
+  .progress { position:relative; overflow:hidden; height: 6px; background: rgba(10,10,15,0.08); border-radius: 999px; }
+  .progress::after { content:''; position:absolute; inset:0; width: 35%; background: linear-gradient(90deg, transparent, #E61C26, transparent); animation: slide 1.4s infinite ease-in-out; }
+  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(380%); } }
+
+  /* Network constellation behind hero */
+  .constellation { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .constellation .node { position:absolute; width:6px; height:6px; border-radius:9999px; background: rgba(255,255,255,0.7); box-shadow: 0 0 12px rgba(255,255,255,0.6); }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+
+  /* Sample report bar */
+  .bar { height: 8px; border-radius: 999px; background: rgba(10,10,15,0.06); overflow: hidden; position: relative; }
+  .bar > span { display:block; height:100%; border-radius: 999px; background: linear-gradient(90deg, #E61C26, #5A48F5); }
+</style>
+</head>
+<body class="bg-[#FAFAFB]">
+
+<!-- ─────────────────  Top Nav  ───────────────── -->
+<header class="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-black/5">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5">
+      <span class="relative inline-flex">
+        <span class="w-9 h-9 rounded-xl hot-gradient grid place-items-center text-white font-display font-bold text-lg">H</span>
+        <span class="absolute -right-1 -bottom-1 w-3 h-3 rounded-full bg-mint border-2 border-white"></span>
+      </span>
+      <span class="font-display font-bold text-lg">Hotspex <span class="text-hot">Synthetic</span></span>
+      <span class="chip bg-ink/5 text-ink-500 text-[10px] tracking-widest ml-2">BETA</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-ink-500">
+      <a href="#how" class="hover:text-ink">How</a>
+      <a href="#grounded" class="hover:text-ink">Grounding</a>
+      <a href="#anatomy" class="hover:text-ink">Anatomy</a>
+      <a href="#methodology" class="hover:text-ink">Methodology</a>
+      <a href="#validation" class="hover:text-ink">Validation</a>
+      <a href="#landscape" class="hover:text-ink">Landscape</a>
+      <a href="#try" class="hover:text-ink">Try it</a>
+      <a href="#sample" class="hover:text-ink">Report</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <a href="#try" class="hidden sm:inline-flex chip bg-ink text-white px-4 py-2 hover:bg-hot transition-colors">Run a study →</a>
+    </div>
+  </div>
+</header>
+
+<!-- ─────────────────  Hero  ───────────────── -->
+<section id="top" class="relative overflow-hidden mesh-bg text-white">
+  <div class="absolute inset-0 neural-dots opacity-40"></div>
+  <div class="constellation" id="constellation"></div>
+  <div class="absolute inset-0 grain opacity-[0.06] mix-blend-overlay"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 pt-24 pb-32">
+    <div class="flex items-center gap-2 mb-6 reveal">
+      <span class="chip bg-white/10 backdrop-blur border border-white/15 text-white tracking-[0.18em] text-[10px]">SYNTHETIC RESPONDENTS · BY HOTSPEX</span>
+      <span class="chip bg-mint/20 text-mint border border-mint/30 text-[10px] tracking-widest">GROUNDED · NOT GENERATED</span>
+    </div>
+
+    <h1 class="font-display font-bold text-5xl md:text-7xl lg:text-[5.5rem] leading-[0.95] tracking-tight max-w-5xl reveal">
+      Your audience.<br/>
+      Pre-launch.<br/>
+      <span class="gradient-text">In minutes.</span>
+    </h1>
+
+    <p class="mt-8 text-lg md:text-xl text-white/70 max-w-2xl leading-relaxed reveal">
+      Test any stimulus — a video, a manifesto, a script, a website, an image — against
+      simulated cohorts grounded in <strong class="text-white">347,000+ real respondent verbatims</strong>
+      and the <strong class="text-hot">Ethosense</strong> audience-science platform.
+      Get a polished report with diagnostic qual, brand-statement breakthrough, and themed positives/negatives.
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-3 reveal">
+      <a href="#try" class="btn-primary inline-flex items-center gap-2">
+        Run a synthetic test
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#sample" class="btn-ghost inline-flex items-center gap-2">
+        See a sample report
+      </a>
+      <a href="#how" class="btn-ghost inline-flex items-center gap-2 bg-transparent border-white/20">
+        How it works
+      </a>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 rounded-2xl overflow-hidden border border-white/10 reveal">
+      <div class="bg-ink/40 backdrop-blur p-6">
+        <div class="text-4xl md:text-5xl font-display font-bold text-white">10<span class="text-hot">m</span></div>
+        <div class="text-xs text-white/60 mt-1 uppercase tracking-wider">From brief to report</div>
+      </div>
+      <div class="bg-ink/40 backdrop-blur p-6">
+        <div class="text-4xl md:text-5xl font-display font-bold text-white">347<span class="text-plum">K</span></div>
+        <div class="text-xs text-white/60 mt-1 uppercase tracking-wider">Real verbatims indexed</div>
+      </div>
+      <div class="bg-ink/40 backdrop-blur p-6">
+        <div class="text-4xl md:text-5xl font-display font-bold text-white">199</div>
+        <div class="text-xs text-white/60 mt-1 uppercase tracking-wider">Past brand studies</div>
+      </div>
+      <div class="bg-ink/40 backdrop-blur p-6">
+        <div class="text-4xl md:text-5xl font-display font-bold text-white">80</div>
+        <div class="text-xs text-white/60 mt-1 uppercase tracking-wider">Audience segments</div>
+      </div>
+    </div>
+
+    <p class="text-[11px] text-white/40 mt-8 max-w-2xl leading-relaxed">
+      Use to <strong class="text-white/80">stress-test concepts and surface hypotheses</strong> — never as a substitute
+      for fieldwork on go/no-go decisions. All output is watermarked
+      <span class="font-mono text-[10px] bg-white/10 px-1.5 py-0.5 rounded">[SYNTHETIC]</span>
+      and isolated from real-respondent results.
+    </p>
+  </div>
+
+  <!-- Logo marquee -->
+  <div class="relative border-t border-white/10 bg-ink/40 backdrop-blur py-5 overflow-hidden">
+    <div class="flex marquee whitespace-nowrap text-white/40 font-display font-medium text-sm tracking-wider uppercase">
+      <span class="px-8">Brand Lift</span><span class="px-8">·</span>
+      <span class="px-8">Concept Test</span><span class="px-8">·</span>
+      <span class="px-8">CVP / Manifesto</span><span class="px-8">·</span>
+      <span class="px-8">Animatic Diagnostic</span><span class="px-8">·</span>
+      <span class="px-8">Pack & Print</span><span class="px-8">·</span>
+      <span class="px-8">Landing-Page Test</span><span class="px-8">·</span>
+      <span class="px-8">Pre-Production Script</span><span class="px-8">·</span>
+      <span class="px-8">Social Post</span><span class="px-8">·</span>
+      <span class="px-8">OOH / Wild Posting</span><span class="px-8">·</span>
+      <span class="px-8">Idea / Concept</span><span class="px-8">·</span>
+      <!-- duplicated for seamless loop -->
+      <span class="px-8">Brand Lift</span><span class="px-8">·</span>
+      <span class="px-8">Concept Test</span><span class="px-8">·</span>
+      <span class="px-8">CVP / Manifesto</span><span class="px-8">·</span>
+      <span class="px-8">Animatic Diagnostic</span><span class="px-8">·</span>
+      <span class="px-8">Pack & Print</span><span class="px-8">·</span>
+      <span class="px-8">Landing-Page Test</span><span class="px-8">·</span>
+      <span class="px-8">Pre-Production Script</span><span class="px-8">·</span>
+      <span class="px-8">Social Post</span><span class="px-8">·</span>
+      <span class="px-8">OOH / Wild Posting</span><span class="px-8">·</span>
+      <span class="px-8">Idea / Concept</span><span class="px-8">·</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  How it works  ───────────────── -->
+<section id="how" class="py-28 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-2xl mb-16 reveal">
+      <span class="chip bg-hot/10 text-hot tracking-widest">HOW IT WORKS</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        Brief in. Reactions out. <span class="gradient-text">Three steps.</span>
+      </h2>
+      <p class="text-ink-500 mt-4 leading-relaxed">
+        Built on the same Hotspex measurement system that powers live tracking — re-engineered
+        so you can prototype the read before a single dollar of fieldwork is spent.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Step 1 -->
+      <div class="reveal relative bg-ink text-white rounded-3xl p-8 overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-hot/40 blur-3xl"></div>
+        <div class="relative">
+          <div class="text-7xl font-display font-bold text-white/10">01</div>
+          <h3 class="font-display font-bold text-2xl mt-2">Drop in your stimulus</h3>
+          <p class="text-white/70 mt-3 leading-relaxed">
+            Image, video link, website URL, script, manifesto, headline + body, or a paste of raw copy.
+            We auto-describe images with a vision model so respondents react to what's actually on screen.
+          </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-hot"></span>Up to 5 concepts per run</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-hot"></span>YouTube / Vimeo URL pull</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-hot"></span>Website crawl + screenshot</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="reveal relative bg-ink text-white rounded-3xl p-8 overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-plum/50 blur-3xl"></div>
+        <div class="relative">
+          <div class="text-7xl font-display font-bold text-white/10">02</div>
+          <h3 class="font-display font-bold text-2xl mt-2">Pick your audience</h3>
+          <p class="text-white/70 mt-3 leading-relaxed">
+            Choose from 80 <strong class="text-hot">Ethosense</strong> audience segments — Census-anchored,
+            attitudinally-rich, with brand affinities and media diet. Or describe a custom audience in plain English.
+          </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-plum"></span>Sample size 5–1000</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-plum"></span>Reproducible (temp = 0)</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-plum"></span>Quotas across age / region / income</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="reveal relative bg-ink text-white rounded-3xl p-8 overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-mint/40 blur-3xl"></div>
+        <div class="relative">
+          <div class="text-7xl font-display font-bold text-white/10">03</div>
+          <h3 class="font-display font-bold text-2xl mt-2">Get a polished report</h3>
+          <p class="text-white/70 mt-3 leading-relaxed">
+            Brand-statement breakthrough, Resonance scorecard, themed positives & negatives, persona-level
+            verbatims, and a strategic "what to fix" callout. Export to PPT or chat with the data.
+          </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-mint"></span>Resonance scorecard (Relevance · Distinctiveness · Memorability)</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-mint"></span>Hotspex Concept Score</li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-mint"></span>One-click PPT export</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  What grounds the synthetics  ───────────────── -->
+<section id="grounded" class="py-28 mesh-bg-light relative overflow-hidden">
+  <div class="absolute inset-0 neural-dots-light opacity-50"></div>
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-14 reveal">
+      <span class="chip bg-plum/10 text-plum tracking-widest">EVIDENCE-BASED</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        What grounds these <span class="gradient-text">synthetics</span>
+      </h2>
+      <p class="text-ink-500 mt-4 leading-relaxed text-lg">
+        Every synthetic respondent is grounded in the Hotspex research portfolio — not generic
+        LLM training data. Each run loads the following into the model context before a single
+        response is generated.
+      </p>
+    </div>
+
+    <!-- Big stat tiles -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+      <a href="https://ethosense.ca/" target="_blank" rel="noopener" class="reveal bg-white rounded-2xl border border-hot/30 p-6 hover:shadow-glow transition-all relative overflow-hidden group">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-hot/10 blur-2xl group-hover:bg-hot/20 transition-colors"></div>
+        <div class="relative">
+          <div class="flex items-baseline gap-2">
+            <div class="text-5xl font-display font-bold text-hot leading-none">80</div>
+            <span class="chip bg-hot/10 text-hot text-[9px] tracking-widest">ETHOSENSE</span>
+          </div>
+          <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Audience segments</div>
+          <p class="text-xs text-ink-500 mt-2 leading-snug">Pre-curated Canadian audience profiles powered by <strong class="text-hot">Ethosense</strong> — Hotspex's proprietary audience-science platform (Census 2021 + attitudinal research). Each persona is a faithful exemplar of one segment.</p>
+        </div>
+      </a>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-plum leading-none">199</div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Past brand studies</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">Indexed across financial services, retail, telecom, CPG, automotive, travel, and government — feeding portfolio-wide pattern recognition.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-mint leading-none">347<span class="text-3xl">K</span></div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Real verbatims</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">346,792 actual open-end answers from past panelists, indexed by study and question. Persona generation samples real phrasing patterns rather than inventing them.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-ink leading-none">24</div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Benchmark concepts</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">Top-12 highest-scoring concepts (what works) + bottom-12 (what fails), with coded themes and real quotes — so the model deduces principles, not literal matches.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-hot leading-none">169</div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Personas</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">× 23 data groups × 113 surveys ≈ 150K respondent rows distilled into persona aggregates. Loaded as ground-truth predispositions per audience.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-plum leading-none">28</div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Voice anchors</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">Real quotes from past brand and category studies. Sets cadence, vocabulary, and emotional register so respondents sound human — not like chatbots.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-mint leading-none">8</div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Hotspex emotion zones</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">Competent · Trustworthy · Familiar · Nurturing · Friendly · Fun · Interesting · Inspiring — the same emotional map used in real Hotspex fieldwork.</p>
+      </div>
+      <div class="reveal bg-white rounded-2xl border border-black/5 p-6 hover:shadow-pop transition-shadow">
+        <div class="text-5xl font-display font-bold text-ink leading-none">100<span class="text-3xl">%</span></div>
+        <div class="text-xs uppercase tracking-wider mt-3 font-bold text-ink">Reproducible</div>
+        <p class="text-xs text-ink-500 mt-2 leading-snug">Every model call runs at temperature = 0 with deterministic seeds. Same brief = same hypotheses. No drift between runs, no hallucinations dressed up as data.</p>
+      </div>
+    </div>
+
+    <!-- Detail trio -->
+    <div class="grid md:grid-cols-3 gap-3 reveal">
+      <div class="bg-white rounded-2xl border border-black/5 p-5 flex gap-3">
+        <div class="text-2xl">📋</div>
+        <div>
+          <div class="font-bold">Real questionnaire structure</div>
+          <p class="text-sm text-ink-500 mt-1">Favourability, consideration, NPS, idea-association pre/post, full Hotspex resonance attribute battery. Answered at temperature = 0 for run-to-run reproducibility.</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-black/5 p-5 flex gap-3">
+        <div class="text-2xl">🎯</div>
+        <div>
+          <div class="font-bold">Brand voice & tone alignment</div>
+          <p class="text-sm text-ink-500 mt-1">Pillars, archetype, and tone guidelines injected into every persona's system prompt — reactions stay anchored in the brand's own positioning.</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-black/5 p-5 flex gap-3">
+        <div class="text-2xl">🧪</div>
+        <div>
+          <div class="font-bold">Reproducible by design</div>
+          <p class="text-sm text-ink-500 mt-1">Every model call runs at temperature = 0 with deterministic seeds — re-running the same brief surfaces the same hypotheses, not new hallucinations.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-8 text-xs text-ink-500 italic max-w-3xl reveal">
+      Synthetic output is watermarked <code class="bg-black/5 px-1.5 py-0.5 rounded font-mono not-italic text-[11px]">[SYNTHETIC]</code>
+      and isolated from real-respondent results. Use it for early-concept stress tests and hypothesis
+      generation — never as a substitute for go/no-go fieldwork.
+    </p>
+  </div>
+</section>
+
+<!-- ─────────────────  Synthetic Brain Anatomy  ───────────────── -->
+<section id="anatomy" class="py-28 bg-ink text-white relative overflow-hidden">
+  <div class="absolute inset-0 mesh-bg opacity-90"></div>
+  <div class="absolute inset-0 neural-dots opacity-30"></div>
+
+  <!-- circuit corners -->
+  <svg class="absolute top-6 left-6 w-24 h-24 text-white/20" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.5" aria-hidden>
+    <path d="M0 30 L20 30 L20 10 L40 10 M50 0 L50 20 L70 20 L70 40 L90 40" />
+    <circle cx="20" cy="30" r="1.5" fill="currentColor"/>
+    <circle cx="50" cy="20" r="1.5" fill="currentColor"/>
+    <circle cx="70" cy="40" r="1.5" fill="currentColor"/>
+  </svg>
+  <svg class="absolute bottom-6 right-6 w-24 h-24 text-white/20 rotate-180" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.5" aria-hidden>
+    <path d="M0 30 L20 30 L20 10 L40 10 M50 0 L50 20 L70 20 L70 40 L90 40" />
+    <circle cx="20" cy="30" r="1.5" fill="currentColor"/>
+    <circle cx="50" cy="20" r="1.5" fill="currentColor"/>
+    <circle cx="70" cy="40" r="1.5" fill="currentColor"/>
+  </svg>
+
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-14 reveal">
+      <span class="chip bg-hot/15 text-hot border border-hot/25 tracking-widest">ANATOMY</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        Inside the <span class="gradient-text">synthetic brain</span>
+      </h2>
+      <p class="text-white/70 mt-4 leading-relaxed text-lg">
+        Every persona is a stack — Ethosense audience science, real verbatims, brand voice,
+        and your stimulus — fed into a deterministic reasoning loop. Not a chatbot.
+        A simulated respondent.
+      </p>
+    </div>
+
+    <div class="grid lg:grid-cols-[1fr,auto,1fr] gap-6 lg:gap-8 items-center">
+      <!-- Inputs -->
+      <div class="space-y-3 reveal">
+        <div class="text-[11px] uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Inputs · loaded into context</div>
+        <div class="flex items-center gap-3 group">
+          <span class="w-10 h-10 rounded-xl bg-hot/20 grid place-items-center text-hot text-lg shrink-0">⚡</span>
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Ethosense audience profile</div>
+            <div class="text-[11px] text-white/60">Census + attitudinal segment + brand affinities + media diet</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <span class="w-10 h-10 rounded-xl bg-plum/20 grid place-items-center text-plum-light text-lg shrink-0">📚</span>
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Real verbatim corpus</div>
+            <div class="text-[11px] text-white/60">347K open-ends sampled for cadence + register</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <span class="w-10 h-10 rounded-xl bg-mint/20 grid place-items-center text-mint text-lg shrink-0">🎨</span>
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Brand voice & tone playbook</div>
+            <div class="text-[11px] text-white/60">Pillars, archetype, lexicon — the brand's positioning DNA</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <span class="w-10 h-10 rounded-xl bg-gold/20 grid place-items-center text-gold text-lg shrink-0">🎯</span>
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Your stimulus</div>
+            <div class="text-[11px] text-white/60">Image, video, web, script — vision-described to the persona</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brain -->
+      <div class="reveal flex flex-col items-center my-8 lg:my-0">
+        <div class="relative w-64 h-64">
+          <!-- Outer rings -->
+          <div class="absolute inset-0 rounded-full border border-hot/20 animate-spin-slow"></div>
+          <div class="absolute inset-3 rounded-full border border-plum/30" style="animation: spin 30s linear infinite reverse"></div>
+          <div class="absolute inset-6 rounded-full border-2 border-dashed border-white/10"></div>
+          <!-- Glow -->
+          <div class="absolute inset-8 rounded-full bg-gradient-to-br from-hot/40 via-plum/40 to-mint/30 blur-2xl animate-pulse-slow"></div>
+
+          <!-- Brain SVG -->
+          <svg viewBox="0 0 200 200" class="absolute inset-0 w-full h-full p-10" fill="none" stroke="url(#brainGrad)" stroke-width="1.5" stroke-linecap="round">
+            <defs>
+              <linearGradient id="brainGrad" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stop-color="#FF3B45"/>
+                <stop offset="50%" stop-color="#7B6DF7"/>
+                <stop offset="100%" stop-color="#00C896"/>
+              </linearGradient>
+              <linearGradient id="brainFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#E61C26" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#5A48F5" stop-opacity="0.15"/>
+              </linearGradient>
+            </defs>
+            <!-- Brain outline (two hemispheres) -->
+            <path d="M100 30 C70 30, 50 50, 50 80 C40 85, 35 100, 40 115 C35 130, 45 150, 65 155 C70 170, 90 175, 100 170 L100 30 Z" fill="url(#brainFill)"/>
+            <path d="M100 30 C130 30, 150 50, 150 80 C160 85, 165 100, 160 115 C165 130, 155 150, 135 155 C130 170, 110 175, 100 170 L100 30 Z" fill="url(#brainFill)"/>
+            <!-- Internal circuit lines -->
+            <path d="M75 60 Q85 70, 75 80 T75 100 T80 120" opacity="0.7"/>
+            <path d="M125 60 Q115 70, 125 80 T125 100 T120 120" opacity="0.7"/>
+            <path d="M100 30 L100 170" opacity="0.5" stroke-dasharray="2,3"/>
+            <path d="M65 90 Q80 95, 95 90" opacity="0.6"/>
+            <path d="M105 90 Q120 95, 135 90" opacity="0.6"/>
+            <path d="M70 130 Q85 125, 95 130" opacity="0.6"/>
+            <path d="M105 130 Q120 125, 130 130" opacity="0.6"/>
+            <!-- Nodes -->
+            <circle cx="75" cy="60" r="2.5" fill="#FF3B45"/>
+            <circle cx="125" cy="60" r="2.5" fill="#FF3B45"/>
+            <circle cx="65" cy="90" r="2.5" fill="#7B6DF7"/>
+            <circle cx="135" cy="90" r="2.5" fill="#7B6DF7"/>
+            <circle cx="80" cy="120" r="2.5" fill="#00C896"/>
+            <circle cx="120" cy="120" r="2.5" fill="#00C896"/>
+            <circle cx="100" cy="100" r="3.5" fill="#FFD53D">
+              <animate attributeName="r" values="3.5;5;3.5" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+
+          <!-- Pulsing data points around -->
+          <span class="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-hot animate-ping"></span>
+          <span class="absolute bottom-4 left-8 w-2 h-2 rounded-full bg-plum animate-ping" style="animation-delay: .8s"></span>
+          <span class="absolute right-6 top-12 w-2 h-2 rounded-full bg-mint animate-ping" style="animation-delay: 1.4s"></span>
+        </div>
+        <div class="text-center mt-5 max-w-[18rem]">
+          <div class="font-display font-bold text-lg">Synthetic respondent</div>
+          <div class="text-[11px] text-white/50 font-mono mt-1">temperature = 0 · seed = persona_id</div>
+          <div class="mt-3 text-[10px] uppercase tracking-widest text-mint">▲ Reproducible</div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="space-y-3 reveal">
+        <div class="text-[11px] uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Outputs · per persona</div>
+        <div class="flex items-center gap-3 group">
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">First-person verbatim</div>
+            <div class="text-[11px] text-white/60">Open-end reaction in segment-true voice</div>
+          </div>
+          <span class="w-10 h-10 rounded-xl bg-hot/20 grid place-items-center text-hot text-lg shrink-0">💬</span>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Pre / post brand ratings</div>
+            <div class="text-[11px] text-white/60">Favourability, NPS, consideration, idea-association</div>
+          </div>
+          <span class="w-10 h-10 rounded-xl bg-plum/20 grid place-items-center text-plum-light text-lg shrink-0">📊</span>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Likes / dislikes (clickspex)</div>
+            <div class="text-[11px] text-white/60">Specific lines of copy + visuals that hit or miss</div>
+          </div>
+          <span class="w-10 h-10 rounded-xl bg-mint/20 grid place-items-center text-mint text-lg shrink-0">👍</span>
+        </div>
+        <div class="flex items-center gap-3 group">
+          <div class="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-3 group-hover:bg-white/10 transition-colors">
+            <div class="font-bold text-sm">Resonance attribute scorecard</div>
+            <div class="text-[11px] text-white/60">Relevance · Distinctiveness · Memorability T2B</div>
+          </div>
+          <span class="w-10 h-10 rounded-xl bg-gold/20 grid place-items-center text-gold text-lg shrink-0">🎚️</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom monospace stack readout -->
+    <div class="reveal mt-16 rounded-2xl bg-black/40 border border-white/10 p-6 font-mono text-[11px] leading-relaxed text-white/70 overflow-x-auto">
+<pre class="whitespace-pre"><span class="text-mint">// stack.compose()</span>
+<span class="text-hot">load</span>  ethosense.segment(<span class="text-gold">"affluent_45_65"</span>)        <span class="text-white/40">→ 1 of 80 audience profiles</span>
+<span class="text-hot">load</span>  verbatim_corpus.sample(persona_id, <span class="text-gold">k=12</span>)   <span class="text-white/40">→ phrasing anchors</span>
+<span class="text-hot">load</span>  brand_voice.playbook()                      <span class="text-white/40">→ pillars + archetype + lexicon</span>
+<span class="text-hot">load</span>  stimulus.describe(vision_model)              <span class="text-white/40">→ multimodal → text brief</span>
+<span class="text-plum">build</span> system_prompt(persona, voice, stimulus)
+<span class="text-plum">run</span>   questionnaire.answer(<span class="text-gold">temperature=0</span>, seed=persona_id)
+<span class="text-mint">return</span> {verbatim, ratings, clickspex, resonance}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  Methodology (engineering for accuracy)  ───────────────── -->
+<section id="methodology" class="py-28 bg-white relative overflow-hidden">
+  <div class="absolute inset-0 neural-dots-light opacity-50"></div>
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-14 reveal">
+      <span class="chip bg-plum/10 text-plum tracking-widest">METHODOLOGY</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        Engineered for <span class="gradient-text">~95% directional accuracy</span> on green-list metrics
+      </h2>
+      <p class="text-ink-500 mt-4 leading-relaxed text-lg">
+        Synthetic respondents only get to "real-respondent close" through engineering discipline.
+        We took the published methodologies of <strong>Aaru, Kantar LINK AI, Ipsos Creative|Spark,
+        Subconscious AI, Fairgen, and the Stanford / Argyle academic foundation</strong> — and
+        stacked the 15 choices that actually move the correlation needle.
+      </p>
+      <p class="text-[12px] text-ink-300 mt-3 leading-relaxed">
+        "95%" means metric-level rank-order correlation r ≥ 0.95 on green-list metrics, after
+        calibration, in categories where Hotspex has ≥ 18 months of tracking history. It does
+        <em>not</em> mean individual-response prediction — the academic ceiling on that is ~5%
+        for any vendor. Honesty about what's possible is the methodology.
+      </p>
+    </div>
+
+    <!-- Methodology card grid: 15 choices -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <!-- 01 — Multi-tier persona grounding -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-plum/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-plum/30 leading-none">01</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Four-layer persona grounding</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Census 2021 / Statistics Canada PUMF + Hotspex brand-tracking history + Ethosense attitudinal segment + matched real verbatims as few-shot exemplars. Single-axis demographic personas don't work — Argyle (Stanford) and PersonaTwin (2025) both confirm.</p>
+            <div class="text-[10px] uppercase tracking-wider text-plum mt-2 font-bold">Argyle · PersonaTwin · Polypersona</div>
+          </div>
+        </div>
+      </div>
+      <!-- 02 — Real-verbatim few-shot -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-hot/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-hot/30 leading-none">02</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Real-verbatim few-shot prompting</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Each persona gets 3–5 actual real-respondent verbatims from past Hotspex fieldwork in the same category, matched on demographics + segment. The single highest-leverage move for correlation lift in the literature.</p>
+            <div class="text-[10px] uppercase tracking-wider text-hot mt-2 font-bold">Highest-leverage step</div>
+          </div>
+        </div>
+      </div>
+      <!-- 03 — Brand-specific RAG -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-mint/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-mint-deep/30 leading-none">03</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Brand-specific RAG context</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Each constituent has access to a category-and-brand knowledge index — tracking data, ad transcripts, recent earned/social mentions. Refreshed weekly. This is the Aaru "media-diet" mechanic — fixed for the staleness that broke their 2024 General Election call.</p>
+            <div class="text-[10px] uppercase tracking-wider text-mint-deep mt-2 font-bold">Aaru pattern · staleness-corrected</div>
+          </div>
+        </div>
+      </div>
+      <!-- 04 — Vision pipeline -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-plum/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-plum/30 leading-none">04</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Computer-vision pre-pass for stimuli</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Visual creative is decomposed into ABCD-style features (branding moment, scene structure, emotional arc, product visibility) <em>before</em> the persona reasons over it — Kantar LINK AI's pattern, validated against 260K+ ad tests over 30 years.</p>
+            <div class="text-[10px] uppercase tracking-wider text-plum mt-2 font-bold">Kantar LINK AI pattern</div>
+          </div>
+        </div>
+      </div>
+      <!-- 05 — Discrete choice substrate -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-gold/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-gold/40 leading-none">05</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Discrete-choice substrate for trade-offs</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Pricing, claim selection, pack design, conjoint-style work routes through a McFadden-style discrete-choice model — not free-form Likert. LLMs are unreliable on numeric trade-offs; choice models aren't. (The Subconscious AI / Nobel-prize-economics move.)</p>
+            <div class="text-[10px] uppercase tracking-wider text-ink-500 mt-2 font-bold">Subconscious AI · McFadden tradition</div>
+          </div>
+        </div>
+      </div>
+      <!-- 06 — Reproducibility -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-hot/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-hot/30 leading-none">06</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Reproducibility controls</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Temp 0.7 for verbatims, temp 0.0 for forced choice. Fixed seed per constituent ID. Full prompt + model-version + seed logged for every response. Version-pinned models — never silent upgrades.</p>
+            <div class="text-[10px] uppercase tracking-wider text-hot mt-2 font-bold">Deterministic by design</div>
+          </div>
+        </div>
+      </div>
+      <!-- 07 — Three-tier validation -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-mint/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-mint-deep/30 leading-none">07</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Three-tier validation scorecard</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Per metric we publish: <strong>distributional fidelity</strong> (KS / KL-divergence), <strong>structural fidelity</strong> (correlation matrix preservation), and <strong>predictive fidelity</strong> (rank-order correlation vs. real). Target r ≥ 0.90 on green-list metrics.</p>
+            <div class="text-[10px] uppercase tracking-wider text-mint-deep mt-2 font-bold">Truth · Transparency · Trust (Ipsos framework)</div>
+          </div>
+        </div>
+      </div>
+      <!-- 08 — Twin-study program -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-plum/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-plum/30 leading-none">08</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Held-out twin-study program</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">60–100 head-to-head studies — synthetic and real fieldwork on the same stimulus, same audience. The per-metric correlation table from these is the only number that survives client scrutiny. Evidenza's playbook, formalized.</p>
+            <div class="text-[10px] uppercase tracking-wider text-plum mt-2 font-bold">The headline-number generator</div>
+          </div>
+        </div>
+      </div>
+      <!-- 09 — Calibration layer -->
+      <div class="reveal rounded-2xl border border-hot/30 p-5 hover:border-hot/60 hover:shadow-glow transition-all bg-gradient-to-br from-hot/5 to-white relative overflow-hidden">
+        <div class="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-hot/10 blur-2xl"></div>
+        <div class="relative flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-hot/40 leading-none">09</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Calibration layer <span class="chip bg-hot/15 text-hot text-[9px] tracking-widest ml-1">CRITICAL</span></div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">A per-metric calibration model trained on synthetic-vs-real deltas from twin studies — applied post-hoc to every estimate. Gets us from raw 80–85% correlation to 92–95%. Refreshed quarterly. <strong>Without this, false-positive rates can balloon from 5% to 80%</strong> (Ipsos's published warning).</p>
+            <div class="text-[10px] uppercase tracking-wider text-hot mt-2 font-bold">Fairgen pattern · Ipsos warning</div>
+          </div>
+        </div>
+      </div>
+      <!-- 10 — Hybrid by default -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-gold/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-gold/40 leading-none">10</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Hybrid by default — never pure synthetic on net-new categories</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Synthetic-only is OK when the brand is in HMF tracking, the category has a real-fieldwork benchmark within 18 months, and the question is directional. Real fieldwork is required when stakes are go/no-go ≥$5M, or the metric is on the red list.</p>
+            <div class="text-[10px] uppercase tracking-wider text-ink-500 mt-2 font-bold">YouGov / Verve posture</div>
+          </div>
+        </div>
+      </div>
+      <!-- 11 — Per-metric green/yellow/red -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-mint/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-mint-deep/30 leading-none">11</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Green / yellow / red metric list</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Every metric is tagged: <strong class="text-mint-deep">green</strong> (target r ≥ 0.95), <strong class="text-amber-600">yellow</strong> (0.80–0.90 with calibration), <strong class="text-rose-500">red</strong> (do not promise synthetic-only). Published in every report's methodology slide.</p>
+            <div class="text-[10px] uppercase tracking-wider text-mint-deep mt-2 font-bold">See validation scorecard ↓</div>
+          </div>
+        </div>
+      </div>
+      <!-- 12 — Ensemble -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-plum/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-plum/30 leading-none">12</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Two-model ensemble</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Every prompt runs against two base models from different vendors (Claude + GPT-class). Calibrated outputs are averaged. Modest accuracy lift; large reduction in single-model failure modes (Argyle showed model-specific biases are real).</p>
+            <div class="text-[10px] uppercase tracking-wider text-plum mt-2 font-bold">Single-vendor risk eliminated</div>
+          </div>
+        </div>
+      </div>
+      <!-- 13 — Verbatim quality scoring -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-hot/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-hot/30 leading-none">13</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Verbatim quality scoring</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Every generated open-end is scored for persona-consistency, specificity (does it reference brand/category specifics rather than generic phrases?), and hallucination flags (claims about features not in the stimulus). Below threshold → regenerated or dropped.</p>
+            <div class="text-[10px] uppercase tracking-wider text-hot mt-2 font-bold">Anti-chatbot guardrail</div>
+          </div>
+        </div>
+      </div>
+      <!-- 14 — Watermarking -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-mint/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-mint-deep/30 leading-none">14</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Watermarking + full disclosure</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Every record is marked <code class="bg-black/5 px-1 py-0.5 rounded font-mono text-[10px]">[SYNTHETIC]</code>. Every report gets a methodology slide stating exactly what was synthetic, what was real, what calibration was applied, and the validated correlation per metric. Pre-empts where ESOMAR / MRS / GRBN are heading.</p>
+            <div class="text-[10px] uppercase tracking-wider text-mint-deep mt-2 font-bold">ESOMAR-aligned · GRBN trust posture</div>
+          </div>
+        </div>
+      </div>
+      <!-- 15 — Continuous validation -->
+      <div class="reveal rounded-2xl border border-black/8 p-5 hover:border-gold/40 hover:shadow-pop transition-all bg-white">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl font-display font-bold text-gold/40 leading-none">15</span>
+          <div class="flex-1">
+            <div class="font-display font-bold text-base">Continuous validation loop</div>
+            <p class="text-xs text-ink-500 mt-1.5 leading-relaxed">Every real Hotspex fieldwork wave becomes new validation data. Twin-study correlation is tracked over time per metric and per category. The correlation trend line is the early-warning system for concept drift — the failure mode the literature flags most.</p>
+            <div class="text-[10px] uppercase tracking-wider text-ink-500 mt-2 font-bold">Drift detection · Always-on</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ritson endorsement card -->
+    <div class="reveal mt-12 rounded-3xl bg-gradient-to-br from-ink to-ink-700 text-white p-8 md:p-12 relative overflow-hidden">
+      <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-hot/30 blur-3xl"></div>
+      <div class="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-plum/30 blur-3xl"></div>
+      <div class="relative max-w-3xl">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-gold font-bold mb-3">INDUSTRY VALIDATION</div>
+        <blockquote class="font-display text-2xl md:text-3xl leading-snug font-medium">
+          <span class="text-hot text-5xl leading-none mr-2">"</span>It was astounding that the matches were so similar… it was 95% correlation.<span class="text-hot text-5xl leading-none ml-2">"</span>
+        </blockquote>
+        <div class="mt-5 text-sm text-white/70">
+          <strong class="text-white">Toni Clayton-Hine</strong> (EY) — on a synthetic recreation of EY's six-month Global Wealth Research Report
+          completed overnight. As reported by <strong class="text-white">Mark Ritson</strong> in <em>Marketing Week</em>:
+          "synthetic data is as good as real — next comes synthetic strategy."
+        </div>
+        <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 rounded-xl overflow-hidden text-[11px]">
+          <a href="https://www.marketingweek.com/ritson-synthetic-data-strategy/" target="_blank" rel="noopener" class="bg-white/5 hover:bg-white/10 backdrop-blur p-3 transition-colors">
+            <div class="text-white/50 uppercase tracking-wider mb-1">Ritson</div>
+            <div class="text-white font-semibold">Marketing Week</div>
+          </a>
+          <a href="https://aaru.com/" target="_blank" rel="noopener" class="bg-white/5 hover:bg-white/10 backdrop-blur p-3 transition-colors">
+            <div class="text-white/50 uppercase tracking-wider mb-1">Aaru</div>
+            <div class="text-white font-semibold">±371 votes (NY primary)</div>
+          </a>
+          <a href="https://www.kantar.com/campaigns/link-ai" target="_blank" rel="noopener" class="bg-white/5 hover:bg-white/10 backdrop-blur p-3 transition-colors">
+            <div class="text-white/50 uppercase tracking-wider mb-1">Kantar</div>
+            <div class="text-white font-semibold">LINK AI · 30yr DB</div>
+          </a>
+          <a href="https://www.ipsos.com/en-us/calibrating-synthetic-confidence" target="_blank" rel="noopener" class="bg-white/5 hover:bg-white/10 backdrop-blur p-3 transition-colors">
+            <div class="text-white/50 uppercase tracking-wider mb-1">Ipsos</div>
+            <div class="text-white font-semibold">Stanford partnership</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  Validation scorecard (green/yellow/red)  ───────────────── -->
+<section id="validation" class="py-28 mesh-bg-light relative overflow-hidden">
+  <div class="absolute inset-0 neural-dots-light opacity-40"></div>
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-12 reveal">
+      <span class="chip bg-mint/10 text-mint-deep tracking-widest">VALIDATION</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        What we promise. <span class="gradient-text">And what we don't.</span>
+      </h2>
+      <p class="text-ink-500 mt-4 leading-relaxed text-lg">
+        Every Hotspex Synthetic metric is published on a green / yellow / red list with its
+        validated twin-study correlation. The skeptics' critique — Conjointly's "synthetic
+        respondents are the homeopathy of market research" — only sticks to vendors who
+        promise everything. We don't.
+      </p>
+    </div>
+
+    <!-- Green / Yellow / Red cards -->
+    <div class="grid lg:grid-cols-3 gap-4">
+      <!-- GREEN -->
+      <div class="reveal rounded-3xl bg-white border-2 border-mint/30 p-7 relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-mint/15 blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-mint"></span>
+            <span class="chip bg-mint/15 text-mint-deep text-[10px] tracking-widest">GREEN · TARGET r ≥ 0.95</span>
+          </div>
+          <h3 class="font-display font-bold text-2xl mt-3">Synthetic-only is fine</h3>
+          <p class="text-xs text-ink-500 mt-2">Metrics where twin-study correlation reliably hits ≥ 0.95 after calibration. Use synthetic to stress-test, screen, optimize, and pre-launch.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Brand awareness rank</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.97</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Ad recognition</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.95</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Message communication</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.94</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Concept-vs-concept choice</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.96</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Claim ranking</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.95</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Pack-preference rank</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.93</span></li>
+            <li class="flex justify-between border-b border-mint/10 pb-2"><span>Creative diagnostics (likes/dislikes)</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.92</span></li>
+            <li class="flex justify-between"><span>Resonance attribute rank</span><span class="font-mono text-mint-deep text-xs">r ≈ 0.94</span></li>
+          </ul>
+        </div>
+      </div>
+      <!-- YELLOW -->
+      <div class="reveal rounded-3xl bg-white border-2 border-amber-300/50 p-7 relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-amber-200/30 blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+            <span class="chip bg-amber-100 text-amber-800 text-[10px] tracking-widest">YELLOW · 0.80 ≤ r &lt; 0.95</span>
+          </div>
+          <h3 class="font-display font-bold text-2xl mt-3">Use with calibration</h3>
+          <p class="text-xs text-ink-500 mt-2">Directionally trustworthy after the calibration layer is applied. Always paired with a real-fieldwork benchmark within 18 months.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>Purchase-intent <em>levels</em></span><span class="font-mono text-amber-700 text-xs">r ≈ 0.88</span></li>
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>Brand imagery deltas</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.85</span></li>
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>NPS rank order</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.84</span></li>
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>Consideration shifts</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.86</span></li>
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>Emotional-zone profile</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.83</span></li>
+            <li class="flex justify-between border-b border-amber-200/40 pb-2"><span>Newcomer / cultural-segment fit</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.81</span></li>
+            <li class="flex justify-between"><span>Price-perception (relative)</span><span class="font-mono text-amber-700 text-xs">r ≈ 0.82</span></li>
+          </ul>
+        </div>
+      </div>
+      <!-- RED -->
+      <div class="reveal rounded-3xl bg-white border-2 border-rose-300/50 p-7 relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-rose-200/30 blur-3xl"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+            <span class="chip bg-rose-100 text-rose-700 text-[10px] tracking-widest">RED · DO NOT PROMISE</span>
+          </div>
+          <h3 class="font-display font-bold text-2xl mt-3">Real fieldwork required</h3>
+          <p class="text-xs text-ink-500 mt-2">Metrics where the underlying methodology — synthetic OR otherwise — is fundamentally fragile. We will not run synthetic-only on these.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Absolute price elasticity</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Low-incidence behavior</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Novel-category entry intent</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Political / electoral metrics</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Single-bet go/no-go ≥ $5M decisions</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between border-b border-rose-200/40 pb-2"><span>Brands with no Hotspex tracking history</span><span class="font-mono text-rose-500 text-xs">no</span></li>
+            <li class="flex justify-between"><span>Individual-level prediction</span><span class="font-mono text-rose-500 text-xs">never</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Twin-study explanation -->
+    <div class="reveal mt-10 grid md:grid-cols-3 gap-3 text-sm">
+      <div class="rounded-2xl bg-white border border-black/5 p-5">
+        <div class="text-3xl font-display font-bold text-plum">60–100</div>
+        <div class="font-bold mt-1">Twin studies a year</div>
+        <p class="text-xs text-ink-500 mt-1.5">Same stimulus, same audience, fielded both as synthetic and as real Hotspex panel — every quarter. The deltas train the calibration layer.</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-black/5 p-5">
+        <div class="text-3xl font-display font-bold text-hot">3-tier</div>
+        <div class="font-bold mt-1">Validation framework</div>
+        <p class="text-xs text-ink-500 mt-1.5">Distributional fidelity (KS / KL-divergence) · Structural fidelity (correlation matrix) · Predictive fidelity (rank-order). All three published per metric.</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-black/5 p-5">
+        <div class="text-3xl font-display font-bold text-mint-deep">Quarterly</div>
+        <div class="font-bold mt-1">Calibration refresh</div>
+        <p class="text-xs text-ink-500 mt-1.5">Every wave of real fieldwork updates the calibration model. Concept drift is the failure mode — continuous validation is the only defense.</p>
+      </div>
+    </div>
+
+    <p class="reveal text-[12px] text-ink-300 italic mt-8 max-w-3xl leading-relaxed">
+      Correlation values shown are illustrative targets aligned with the published twin-study
+      ranges from Aaru (~95% directional, EY engagement), Verve VIPs (>0.9 validation),
+      Fairgen (95%+ on held-out distributions), and Kantar LINK AI (~80–89% on creative-effectiveness
+      metrics). Hotspex publishes the actual measured correlation per metric in every report's
+      methodology slide.
+    </p>
+  </div>
+</section>
+
+<!-- ─────────────────  Vendor landscape  ───────────────── -->
+<section id="landscape" class="py-28 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-12 reveal">
+      <span class="chip bg-hot/10 text-hot tracking-widest">LANDSCAPE</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        Where Hotspex Synthetic <span class="gradient-text">sits</span>
+      </h2>
+      <p class="text-ink-500 mt-4 leading-relaxed text-lg">
+        The synthetic landscape splits into three postures. We chose the one with the longest
+        defensibility: real-data-first, calibrated, hybrid.
+      </p>
+    </div>
+
+    <div class="reveal overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
+      <table class="w-full min-w-[920px] text-sm">
+        <thead>
+          <tr class="text-left border-b-2 border-ink/10">
+            <th class="py-3 pr-3 font-display font-bold text-ink">Vendor</th>
+            <th class="py-3 pr-3 font-bold text-ink-500">Posture</th>
+            <th class="py-3 pr-3 font-bold text-ink-500">Grounding</th>
+            <th class="py-3 pr-3 font-bold text-ink-500">Validation</th>
+            <th class="py-3 pr-3 font-bold text-ink-500">Calibration</th>
+            <th class="py-3 font-bold text-ink-500">Disclosure</th>
+          </tr>
+        </thead>
+        <tbody class="text-[13px]">
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-display font-bold text-hot">Hotspex Synthetic</td>
+            <td class="py-3 pr-3">Hybrid + calibrated</td>
+            <td class="py-3 pr-3">Census · Ethosense · 347K verbatims · brand tracking</td>
+            <td class="py-3 pr-3">60–100 twin studies / yr · 3-tier scorecard</td>
+            <td class="py-3 pr-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">✓ per-metric</span></td>
+            <td class="py-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">Full · per-metric r</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">Aaru</td>
+            <td class="py-3 pr-3">Pure synthetic · multi-agent</td>
+            <td class="py-3 pr-3">US Census + media diet (live)</td>
+            <td class="py-3 pr-3">Outcome-based (elections, EY case)</td>
+            <td class="py-3 pr-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">partial</span></td>
+            <td class="py-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">Headline only</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">Kantar LINK AI</td>
+            <td class="py-3 pr-3">Creative-prediction (no personas)</td>
+            <td class="py-3 pr-3">260K+ ad tests · 40M interviews · 30 yrs</td>
+            <td class="py-3 pr-3">Held-out vs. real LINK + sales lift</td>
+            <td class="py-3 pr-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">✓ embedded</span></td>
+            <td class="py-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">Full</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">Ipsos Creative|Spark + Synthetic Sample</td>
+            <td class="py-3 pr-3">Hybrid · Stanford-built panel</td>
+            <td class="py-3 pr-3">~18K human cases · Stanford PASCL twins</td>
+            <td class="py-3 pr-3">Truth · Transparency · Trust framework</td>
+            <td class="py-3 pr-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">✓ explicit</span></td>
+            <td class="py-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">Full</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">YouGov AI Personas</td>
+            <td class="py-3 pr-3">Real-panel-grounded (anti-synthetic)</td>
+            <td class="py-3 pr-3">480K verified panelists · 650K data points</td>
+            <td class="py-3 pr-3">Panel-validation, not twin-study</td>
+            <td class="py-3 pr-3"><span class="chip bg-ink/10 text-ink-500 text-[10px]">n/a</span></td>
+            <td class="py-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">Full</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">Verve VIPs</td>
+            <td class="py-3 pr-3">"Audience simulations" (refuses synthetic label)</td>
+            <td class="py-3 pr-3">Client-specific datasets</td>
+            <td class="py-3 pr-3">>0.9 correlation claimed</td>
+            <td class="py-3 pr-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">partial</span></td>
+            <td class="py-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">Per engagement</span></td>
+          </tr>
+          <tr class="border-b border-black/5 hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">Subconscious AI</td>
+            <td class="py-3 pr-3">Causal · discrete-choice models</td>
+            <td class="py-3 pr-3">3.5M digital twins · 800M respondent records</td>
+            <td class="py-3 pr-3">Published replication packs</td>
+            <td class="py-3 pr-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">✓ structural</span></td>
+            <td class="py-3"><span class="chip bg-mint/15 text-mint-deep text-[10px]">Academic</span></td>
+          </tr>
+          <tr class="hover:bg-surface">
+            <td class="py-3 pr-3 font-bold">NIQ BASES AI Screener</td>
+            <td class="py-3 pr-3">Behavioral-data grounded</td>
+            <td class="py-3 pr-3">NIQ retail / consumer panel</td>
+            <td class="py-3 pr-3">vs. real BASES concept tests</td>
+            <td class="py-3 pr-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">partial</span></td>
+            <td class="py-3"><span class="chip bg-amber-100 text-amber-800 text-[10px]">Limited</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="reveal mt-8 grid md:grid-cols-3 gap-3 text-sm">
+      <div class="rounded-2xl bg-ink text-white p-5">
+        <div class="text-[10px] uppercase tracking-widest text-gold font-bold">Why our posture wins</div>
+        <p class="mt-2 leading-relaxed">Pure-synthetic vendors hit a ceiling when the world drifts past their training data. Real-only vendors can't pre-launch. <strong class="text-mint">Hybrid + calibrated</strong> is the only stance that holds up at the boardroom table.</p>
+      </div>
+      <div class="rounded-2xl bg-ink text-white p-5">
+        <div class="text-[10px] uppercase tracking-widest text-gold font-bold">What no one promises (and we don't either)</div>
+        <p class="mt-2 leading-relaxed">Individual-level prediction. Absolute price elasticity. Novel-category demand. Anything political. The literature ceiling is the literature ceiling — beware vendors who pretend otherwise.</p>
+      </div>
+      <div class="rounded-2xl bg-ink text-white p-5">
+        <div class="text-[10px] uppercase tracking-widest text-gold font-bold">Where we go further</div>
+        <p class="mt-2 leading-relaxed">Per-metric correlation in every report. Two-model ensemble. Verbatim quality scoring. Continuous twin-study validation. Most of the field publishes a headline number; we publish the whole table.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  Try it / Run form  ───────────────── -->
+<section id="try" class="py-28 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-[1.2fr,1fr] gap-12">
+      <div class="reveal">
+        <span class="chip bg-mint/10 text-mint-deep tracking-widest">TRY IT</span>
+        <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+          Configure your <span class="gradient-text">synthetic study</span>
+        </h2>
+        <p class="text-ink-500 mt-4 leading-relaxed">
+          Drop in your stimulus, pick an audience, hit run. The form below is wired
+          end-to-end — submit it and the demo will simulate the queue, progress,
+          and report-ready notification.
+        </p>
+
+        <div class="mt-8 space-y-6 text-sm">
+          <div class="flex gap-3">
+            <div class="w-8 h-8 rounded-full bg-hot/10 text-hot grid place-items-center font-bold shrink-0">1</div>
+            <div>
+              <div class="font-bold">Anything you want reactions to</div>
+              <div class="text-ink-500">Image, video link, website URL, script, manifesto, social post copy.</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-8 h-8 rounded-full bg-plum/10 text-plum grid place-items-center font-bold shrink-0">2</div>
+            <div>
+              <div class="font-bold">Audience-shaped panel</div>
+              <div class="text-ink-500">80 Ethosense segments or describe your own.</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-8 h-8 rounded-full bg-mint/10 text-mint-deep grid place-items-center font-bold shrink-0">3</div>
+            <div>
+              <div class="font-bold">Polished, exportable read</div>
+              <div class="text-ink-500">~3 min for 200 (Haiku) · ~15 min for richer Opus runs.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 p-5 rounded-2xl bg-ink text-white">
+          <div class="text-xs uppercase tracking-widest text-white/60 mb-1.5">Live · Right now</div>
+          <div class="font-display text-2xl font-bold leading-snug">
+            <span id="liveCount">142</span> synthetic respondents simulated <span class="text-white/50">in the last hour.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="reveal bg-white border border-black/5 rounded-3xl p-7 shadow-card">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-display font-bold text-xl">New synthetic run</h3>
+          <span class="chip bg-hot/10 text-hot text-[10px] tracking-widest">DEMO</span>
+        </div>
+
+        <!-- Stimulus type -->
+        <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Stimulus type</label>
+        <div class="seg flex-wrap mb-4" id="stimSeg">
+          <button class="on" data-stim="image">Image</button>
+          <button data-stim="video">Video URL</button>
+          <button data-stim="website">Website</button>
+          <button data-stim="script">Script</button>
+          <button data-stim="manifesto">Manifesto / CVP</button>
+        </div>
+
+        <!-- Stim panels -->
+        <div id="panel-image" class="stim-panel">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Drop image (or click to choose)</label>
+          <label class="block border-2 border-dashed border-black/15 rounded-xl p-8 text-center cursor-pointer hover:border-hot hover:bg-hot/5 transition-colors" id="dropZone">
+            <input type="file" accept="image/*" class="hidden" id="fileInput" />
+            <div id="dropEmpty">
+              <div class="text-3xl mb-2">📤</div>
+              <div class="font-medium">Drop a JPG / PNG / WebP</div>
+              <div class="text-xs text-ink-500 mt-1">Up to 25 MB · auto-resized to 1280px</div>
+            </div>
+            <div id="dropFilled" class="hidden">
+              <img id="thumb" class="max-h-44 mx-auto rounded-lg" />
+              <div id="dropName" class="text-xs text-ink-500 mt-2"></div>
+            </div>
+          </label>
+        </div>
+
+        <div id="panel-video" class="stim-panel hidden">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Video URL (YouTube / Vimeo)</label>
+          <input class="input" type="url" placeholder="https://youtube.com/watch?v=..." />
+          <p class="text-[11px] text-ink-500 mt-2">We pull the title, description, tags, and frame stills to brief respondents.</p>
+        </div>
+
+        <div id="panel-website" class="stim-panel hidden">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Website / landing-page URL</label>
+          <input class="input" type="url" placeholder="https://yourbrand.com/landing" />
+          <p class="text-[11px] text-ink-500 mt-2">We crawl the page, capture above-the-fold + key sections, and feed it to respondents like a landing-page test.</p>
+        </div>
+
+        <div id="panel-script" class="stim-panel hidden">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Paste your script / copy</label>
+          <textarea class="input min-h-[140px] font-mono text-xs" placeholder="VOICEOVER: Open on a busy morning kitchen…&#10;CUT TO: …"></textarea>
+        </div>
+
+        <div id="panel-manifesto" class="stim-panel hidden">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Manifesto / value prop</label>
+          <textarea class="input min-h-[140px] font-mono text-xs" placeholder="We believe…"></textarea>
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2 mt-3">Brand statements (post-exposure T2B battery)</label>
+          <div class="space-y-1.5" id="brandStatements">
+            <input class="input text-xs" value="This brand simplifies my life" />
+            <input class="input text-xs" value="This brand has well-designed products and services" />
+            <input class="input text-xs" value="This brand is a brand I trust" />
+            <input class="input text-xs" value="This brand adapts to the needs of its customers" />
+          </div>
+          <button class="text-xs mt-2 text-plum font-semibold" type="button" id="addBs">＋ Add statement</button>
+        </div>
+
+        <!-- Audience -->
+        <div class="mt-6">
+          <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Audience</label>
+          <div class="grid grid-cols-2 gap-2" id="audGrid"></div>
+          <textarea class="input mt-3 text-xs" rows="2" placeholder="Or describe a custom audience in plain English (e.g. 'Canadian adults 28-45 actively shopping for a mortgage…')"></textarea>
+        </div>
+
+        <!-- Sample size + model -->
+        <div class="grid grid-cols-2 gap-3 mt-5">
+          <div>
+            <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Sample size</label>
+            <input class="input" type="number" value="100" min="5" max="1000" id="ssize" />
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-wider font-bold text-ink-500 block mb-2">Model</label>
+            <select class="input">
+              <option>Haiku 4.5 · fast (~3 min for 200)</option>
+              <option>Opus 4.7 · deeper qual (~15 min for 200)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Run -->
+        <button id="runBtn" class="btn-primary w-full mt-7 inline-flex items-center justify-center gap-2">
+          <span id="runLabel">Run synthetic test →</span>
+        </button>
+
+        <div id="runProgress" class="hidden mt-4">
+          <div class="progress mb-2"></div>
+          <div class="text-xs text-ink-500" id="runStage">Queueing synthetic respondents…</div>
+        </div>
+
+        <div id="runDone" class="hidden mt-4 p-4 rounded-xl bg-mint/10 border border-mint/30 text-mint-deep text-sm">
+          <div class="font-bold">✓ Demo run complete</div>
+          <p class="mt-1 text-mint-deep/80">In the live product, you'd land on the report. Scroll down to see <a href="#sample" class="underline font-semibold">a sample report</a> right now.</p>
+        </div>
+
+        <p class="text-[10px] text-ink-500 mt-4 text-center">
+          Demo only — no respondents are actually generated from this page. Book a workspace to run real synthetic studies.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  Sample Report  ───────────────── -->
+<section id="sample" class="py-28 bg-ink text-white relative overflow-hidden">
+  <div class="absolute inset-0 mesh-bg opacity-60"></div>
+  <div class="relative max-w-7xl mx-auto px-6">
+    <div class="max-w-3xl mb-12 reveal">
+      <span class="chip bg-white/10 border border-white/15 text-white tracking-widest">SAMPLE REPORT</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        What you actually <span class="gradient-text">walk away with</span>
+      </h2>
+      <p class="text-white/70 mt-4 leading-relaxed text-lg">
+        Every run produces a polished, executive-ready report — same scaffolding as live Hotspex
+        fieldwork, watermarked synthetic, exportable to PPT.
+      </p>
+    </div>
+
+    <!-- Mock report card -->
+    <div class="reveal bg-white text-ink rounded-3xl p-8 shadow-glow">
+      <!-- Report header -->
+      <div class="flex items-start justify-between gap-6 pb-6 border-b border-black/5">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="chip bg-hot/10 text-hot text-[10px] tracking-widest">[SYNTHETIC] · BETA</span>
+            <span class="text-[11px] text-ink-500">Run #SX-04829 · 200 personas</span>
+          </div>
+          <h3 class="font-display font-bold text-3xl">"Live Boldly" — 30s Pre-Production Script</h3>
+          <p class="text-ink-500 mt-1 text-sm">Audience: HNW 45-65 · Reproducible · Opus 4.7</p>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <button class="px-3 py-2 rounded-lg bg-ink text-white text-xs font-medium">Export PPT</button>
+          <button class="px-3 py-2 rounded-lg border border-black/10 text-xs font-medium">Share</button>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-mint-deep">112</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Hotspex Concept Score</div>
+          <div class="text-[10px] text-mint-deep mt-0.5 font-semibold">▲ Builds the brand</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-hot">68%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Component Appeal · T2B</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-plum">73%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Positive sentiment</div>
+        </div>
+        <div class="rounded-xl border border-black/5 p-4">
+          <div class="text-3xl font-display font-bold text-ink">61%</div>
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 mt-1">Brand mentions in open-ends</div>
+        </div>
+      </div>
+
+      <!-- Resonance scorecard -->
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-display font-bold text-lg">Resonance Scorecard</h4>
+          <span class="text-[11px] text-ink-500">Relevance · Distinctiveness · Memorability</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Relevance</span><span class="text-ink-500">71% T2B · <span class="text-mint-deep font-semibold">+12 pts pre→post</span></span></div>
+            <div class="bar"><span style="width: 71%; background: linear-gradient(90deg,#00C896,#5A48F5)"></span></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Distinctiveness</span><span class="text-ink-500">58% T2B · <span class="text-mint-deep font-semibold">+8 pts pre→post</span></span></div>
+            <div class="bar"><span style="width: 58%; background: linear-gradient(90deg,#E61C26,#5A48F5)"></span></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1.5"><span class="font-medium">Memorability</span><span class="text-ink-500">63% T2B · <span class="text-mint-deep font-semibold">+9 pts pre→post</span></span></div>
+            <div class="bar"><span style="width: 63%; background: linear-gradient(90deg,#FFD53D,#E61C26)"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Themed positives / negatives -->
+      <div class="mt-8 grid md:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-mint/30 bg-mint/5 p-5">
+          <div class="text-xs uppercase tracking-wider font-bold text-mint-deep mb-3">✓ Top positive themes</div>
+          <ul class="space-y-2 text-sm">
+            <li class="flex justify-between"><span>Aspirational, not aspirational-lecture</span><span class="text-ink-500 font-mono text-xs">42%</span></li>
+            <li class="flex justify-between"><span>Real-feeling characters, not models</span><span class="text-ink-500 font-mono text-xs">38%</span></li>
+            <li class="flex justify-between"><span>End-frame brand-build is clear</span><span class="text-ink-500 font-mono text-xs">31%</span></li>
+            <li class="flex justify-between"><span>Tone matches life-stage</span><span class="text-ink-500 font-mono text-xs">27%</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-hot/30 bg-hot/5 p-5">
+          <div class="text-xs uppercase tracking-wider font-bold text-hot mb-3">⚠ Top negative themes</div>
+          <ul class="space-y-2 text-sm">
+            <li class="flex justify-between"><span>VO crowds the visual story</span><span class="text-ink-500 font-mono text-xs">29%</span></li>
+            <li class="flex justify-between"><span>Music is generic / forgettable</span><span class="text-ink-500 font-mono text-xs">22%</span></li>
+            <li class="flex justify-between"><span>Feels generic — could be any brand in the category</span><span class="text-ink-500 font-mono text-xs">19%</span></li>
+            <li class="flex justify-between"><span>Pacing drags in the middle 10 seconds</span><span class="text-ink-500 font-mono text-xs">14%</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Verbatims -->
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-display font-bold text-lg">Persona verbatims</h4>
+          <span class="text-[11px] text-ink-500">Sampled across 80 segments</span>
+        </div>
+        <div class="grid md:grid-cols-3 gap-3">
+          <blockquote class="rounded-xl bg-white border border-black/5 p-4 text-sm">
+            <div class="text-3xl text-hot leading-none mb-1">"</div>
+            <p class="leading-relaxed">It feels like the brand is finally talking <em>to</em> me, not at me. The kitchen scene reminded me of my own life last Saturday.</p>
+            <div class="text-[11px] text-ink-500 mt-3 font-mono">Pre-retiree · Suburban ON · F · 58</div>
+          </blockquote>
+          <blockquote class="rounded-xl bg-white border border-black/5 p-4 text-sm">
+            <div class="text-3xl text-plum leading-none mb-1">"</div>
+            <p class="leading-relaxed">The voiceover is doing too much. Let the visuals breathe — the script repeats what I can already see.</p>
+            <div class="text-[11px] text-ink-500 mt-3 font-mono">HNW Professional · Toronto · M · 47</div>
+          </blockquote>
+          <blockquote class="rounded-xl bg-white border border-black/5 p-4 text-sm">
+            <div class="text-3xl text-mint-deep leading-none mb-1">"</div>
+            <p class="leading-relaxed">I'd notice this in a feed. But ten seconds in, it could be three other ads I've already scrolled past this week.</p>
+            <div class="text-[11px] text-ink-500 mt-3 font-mono">Gen Z Saver · Vancouver · NB · 26</div>
+          </blockquote>
+        </div>
+      </div>
+
+      <!-- Strategic recommendation -->
+      <div class="mt-8 p-6 rounded-2xl bg-gradient-to-br from-ink to-ink/90 text-white relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-hot/40 blur-3xl"></div>
+        <div class="relative">
+          <div class="text-[10px] uppercase tracking-[0.2em] text-gold font-bold">Strategic Recommendation</div>
+          <h4 class="font-display font-bold text-xl mt-1.5">Tighten the middle 10s, strip 20% of VO, hold the end-frame longer.</h4>
+          <p class="text-white/70 mt-2 text-sm leading-relaxed">
+            A Concept Score of 112 says this builds the brand. The risk is distinctiveness —
+            "feels generic" is a real signal at 19%. The fix is in production,
+            not strategy: let the visual story do more of the work and over-index the
+            end-frame brand build.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  FAQ  ───────────────── -->
+<section id="faq" class="py-28 bg-white">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="mb-12 reveal">
+      <span class="chip bg-hot/10 text-hot tracking-widest">FAQ</span>
+      <h2 class="font-display font-bold text-4xl md:text-5xl mt-4 leading-tight">
+        The questions <span class="gradient-text">smart clients ask</span>
+      </h2>
+    </div>
+
+    <div class="space-y-3">
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          Aren't synthetic respondents just LLM hallucinations dressed up?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          Generic LLMs would be. Hotspex Synthetic personas are grounded in 347K real verbatims,
+          80 <strong>Ethosense</strong> audience segments, 199 past brand studies, and the full
+          Hotspex resonance attribute battery — all loaded into context before a single response
+          is generated. Reactions are sampled from real phrasing patterns, not invented from
+          scratch. Output is reproducible at temperature 0.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          Conjointly says "synthetic respondents are the homeopathy of market research." Are they wrong?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          They're right about the bad versions of this category — the ones promising individual-level
+          prediction, single-vendor LLM personas with no grounding, no calibration, and no published
+          twin-study correlation. We don't do those things. The Argyle / Stanford literature is clear:
+          group-level distributional fidelity is achievable; individual-level prediction is not. We
+          publish a green / yellow / red list saying exactly which metrics we promise synthetic-only,
+          which require calibration, and which require real fieldwork. The whole point of our
+          posture is to <em>not</em> be the homeopathy version.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          Where does the "95%" number actually come from?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          From <strong>twin studies</strong> — the same brief fielded both as a synthetic run and
+          as real Hotspex panel fieldwork, then compared metric-by-metric. Aaru hit 95% correlation
+          with EY's six-month Global Wealth Research Report (Mark Ritson, <em>Marketing Week</em>).
+          Verve VIPs publish &gt;0.9 validation correlation. Fairgen hits 95%+ on held-out distributions.
+          Hotspex's target is r ≥ 0.95 on green-list metrics, after the calibration layer is applied,
+          in categories with real-fieldwork history. The actual measured number lands in every report's
+          methodology slide — not as a vendor headline, as a per-metric table.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          What's a "calibration layer" — and why is it non-optional?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          Ipsos's published warning is the cleanest framing: "naively boosting a dataset can increase
+          the rate of false positives from a standard 5% to as high as 80%." A calibration layer is
+          a post-hoc bias-correction model trained on the synthetic-vs-real deltas observed in twin
+          studies. We apply it to every estimate, refresh quarterly with new fieldwork, and publish
+          the pre- and post-calibration correlation. It's the difference between an 80–85%
+          uncalibrated raw correlation and a 92–95% defensible production output. (This is the
+          Fairgen pattern, applied at the metric level rather than the cell level.)
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          Will this replace fieldwork?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          No — and we're explicit about it. Synthetic studies are for stress-testing concepts,
+          surfacing hypotheses, and de-risking creative bets early. Go/no-go decisions on real spend
+          still belong with real respondents. Every output is watermarked
+          <code class="bg-black/5 px-1.5 py-0.5 rounded font-mono text-[11px]">[SYNTHETIC]</code> and
+          quarantined from real-respondent results in the workspace.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          What can I actually test?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          Anything you can describe or upload — scripts, animatics, finished video (with a YouTube/Vimeo URL),
+          static images, OOH, social posts, landing pages (paste the URL — we crawl it), value-prop manifestos,
+          product concepts, idea boards, packs, even competitor ads. CVP / value-prop tests have a dedicated
+          flow (manifesto + ad-idea + brand statements).
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          How fast?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          ~3 minutes for 200 respondents on Haiku 4.5 (the default). ~15 minutes for the same on Opus 4.7,
+          which produces meaningfully richer themed qual + strategic recommendations. 1000-respondent runs
+          finish in ~13 minutes (Haiku) or ~70 minutes (Opus). Background jobs survive page navigation —
+          you'll get a notification when the run lands.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          What does the report actually contain?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          Hotspex Concept Score, full Resonance scorecard (Relevance · Distinctiveness ·
+          Memorability) with pre/post lift, brand-statement breakthrough on a T2B battery,
+          themed positive and negative tables, persona-level verbatims sampled across
+          Ethosense segments, a brand-placement map, a strategic "what to fix" callout, and
+          a chat-over-the-data Opus session for follow-up questions. Exports to PPT in one click.
+        </p>
+      </details>
+      <details class="group bg-white border border-black/8 rounded-2xl p-5 hover:border-black/20 transition-colors reveal">
+        <summary class="flex items-center justify-between font-display font-bold text-lg">
+          How do I get access?
+          <span class="text-2xl text-ink-500 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="text-ink-500 mt-3 leading-relaxed">
+          Hotspex Synthetic is in private beta. Reach out for a workspace — we'll set up your
+          brand-voice profile, ingest the studies you've run with us, and give you a credit
+          allocation for your team. Existing Hotspex tracking clients get it bundled.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  CTA  ───────────────── -->
+<section class="py-24 relative overflow-hidden">
+  <div class="absolute inset-0 hot-gradient"></div>
+  <div class="absolute inset-0 grain opacity-[0.08] mix-blend-overlay"></div>
+  <div class="relative max-w-5xl mx-auto px-6 text-center text-white">
+    <h2 class="font-display font-bold text-4xl md:text-6xl leading-[0.95] tracking-tight">
+      Pre-launch your audience.<br/> Before launch is too late.
+    </h2>
+    <p class="mt-6 text-white/80 text-lg max-w-2xl mx-auto">
+      Stop killing concepts in conference rooms. Get a defensible read on every idea
+      before the production budget is committed.
+    </p>
+    <div class="mt-10 flex flex-wrap gap-3 justify-center">
+      <a href="mailto:hello@hotspex.com?subject=Hotspex%20Synthetic%20-%20workspace%20request" class="inline-flex items-center gap-2 bg-white text-hot font-bold px-6 py-4 rounded-2xl hover:scale-105 transition-transform">
+        Request a workspace
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#try" class="btn-ghost border-white/30">Try the demo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────  Footer  ───────────────── -->
+<footer class="bg-ink text-white/60 py-14">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+    <div>
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="w-8 h-8 rounded-lg hot-gradient grid place-items-center text-white font-display font-bold">H</span>
+        <span class="font-display font-bold text-white">Hotspex Synthetic</span>
+      </div>
+      <p class="text-sm leading-relaxed">Synthetic studies grounded in real audience research. Powered by the Hotspex measurement system.</p>
+    </div>
+    <div>
+      <div class="text-xs uppercase tracking-wider text-white font-bold mb-3">Product</div>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#how" class="hover:text-white">How it works</a></li>
+        <li><a href="#grounded" class="hover:text-white">What grounds it</a></li>
+        <li><a href="#try" class="hover:text-white">Try it</a></li>
+        <li><a href="#sample" class="hover:text-white">Sample report</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="text-xs uppercase tracking-wider text-white font-bold mb-3">Company</div>
+      <ul class="space-y-2 text-sm">
+        <li><a href="https://www.hotspex.com" class="hover:text-white">Hotspex.com</a></li>
+        <li><a href="https://www.hotspex.com/about" class="hover:text-white">About</a></li>
+        <li><a href="mailto:hello@hotspex.com" class="hover:text-white">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="text-xs uppercase tracking-wider text-white font-bold mb-3">Important</div>
+      <p class="text-xs leading-relaxed">All synthetic output is watermarked <code class="bg-white/10 px-1 rounded">[SYNTHETIC]</code>. Use to surface hypotheses, never as a substitute for fieldwork on go/no-go decisions.</p>
+    </div>
+  </div>
+  <div class="border-t border-white/10 mt-10 pt-6 max-w-7xl mx-auto px-6 text-xs flex flex-wrap items-center justify-between gap-3">
+    <span>© <span id="year"></span> Hotspex Inc. All rights reserved.</span>
+    <span class="text-white/40">Built for brand builders.</span>
+  </div>
+</footer>
+
+<script>
+  // ── Reveal on scroll ────────────────────────────────────────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) }})
+  }, { threshold: 0.08 })
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // ── Constellation nodes in hero ─────────────────────────────
+  (function buildConstellation() {
+    const wrap = document.getElementById('constellation')
+    if (!wrap) return
+    const N = 36
+    for (let i = 0; i < N; i++) {
+      const n = document.createElement('span')
+      n.className = 'node'
+      n.style.left = Math.random() * 100 + '%'
+      n.style.top = Math.random() * 100 + '%'
+      const s = 2 + Math.random() * 4
+      n.style.width = s + 'px'
+      n.style.height = s + 'px'
+      n.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2)
+      n.style.animation = `float ${6 + Math.random() * 8}s ease-in-out ${Math.random() * 4}s infinite`
+      wrap.appendChild(n)
+    }
+  })()
+
+  // ── Stim type segmented control ─────────────────────────────
+  document.querySelectorAll('#stimSeg button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#stimSeg button').forEach((b) => b.classList.remove('on'))
+      btn.classList.add('on')
+      const stim = btn.dataset.stim
+      document.querySelectorAll('.stim-panel').forEach((p) => p.classList.add('hidden'))
+      document.getElementById('panel-' + stim).classList.remove('hidden')
+    })
+  })
+
+  // ── Image upload preview ───────────────────────────────────
+  const fi = document.getElementById('fileInput')
+  fi?.addEventListener('change', () => {
+    const f = fi.files?.[0]
+    if (!f) return
+    const url = URL.createObjectURL(f)
+    document.getElementById('thumb').src = url
+    document.getElementById('dropName').textContent = `${f.name} · ${Math.round(f.size / 1024)} KB`
+    document.getElementById('dropEmpty').classList.add('hidden')
+    document.getElementById('dropFilled').classList.remove('hidden')
+  })
+
+  // ── Audience grid ──────────────────────────────────────────
+  const AUD = [
+    { key: 'gen-pop', label: 'General population', desc: 'Mainstream Canadian adults across age, region, income.' },
+    { key: 'gen-z', label: 'Youth / Gen Z', desc: 'Canadians 18-29: students, early-career, mobile-first.' },
+    { key: 'millennial', label: 'Millennials', desc: 'Adults 28-43: family formation, mortgage, career growth.' },
+    { key: 'wealth', label: 'Affluent / HNW', desc: '$800K+ investable. Established careers, legacy mindset.' },
+    { key: 'newcomer', label: 'New Canadians', desc: 'Immigrated within 5 yrs. Establishing themselves, open to new brands.' },
+    { key: 'smb', label: 'Small business', desc: 'Owners of 1-25 employee businesses across services + trades.' },
+    { key: 'big-ticket', label: 'Big-ticket shoppers', desc: 'Active researchers for high-consideration purchases (home, auto, travel).' },
+    { key: 'premium', label: 'Premium lifestyle', desc: 'Lifestyle-driven across mass to premium tiers of the category.' },
+    { key: 'parents', label: 'Parents 30-50', desc: 'Households w/ kids at home. Time-pressed, value-led.' },
+    { key: 'retiree', label: 'Pre-retirees / retirees', desc: 'Adults 55+. Income preservation, advisor relationships.' },
+    { key: 'qc-fr', label: 'Quebec francophone', desc: 'French-language Quebecois adults 25-65.' },
+    { key: 'custom', label: 'Custom audience', desc: 'Describe in plain English in the box below.' },
+  ]
+  const grid = document.getElementById('audGrid')
+  const selected = new Set(['gen-pop'])
+  AUD.forEach((a) => {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'a-tile text-left' + (selected.has(a.key) ? ' on' : '')
+    btn.innerHTML = `<div class="font-bold text-sm">${a.label}</div><div class="a-tile-desc text-[11px] text-ink-500 mt-1 leading-snug">${a.desc}</div>`
+    btn.addEventListener('click', () => {
+      if (selected.has(a.key)) selected.delete(a.key); else selected.add(a.key)
+      btn.classList.toggle('on')
+    })
+    grid.appendChild(btn)
+  })
+
+  // ── Add brand statement row ─────────────────────────────────
+  document.getElementById('addBs')?.addEventListener('click', () => {
+    const i = document.createElement('input')
+    i.className = 'input text-xs'
+    i.placeholder = 'Add another brand statement…'
+    document.getElementById('brandStatements').appendChild(i)
+    i.focus()
+  })
+
+  // ── Run button — simulated progress ─────────────────────────
+  const stages = [
+    'Queueing synthetic respondents…',
+    'Loading 80 audience segments + matched personas…',
+    'Briefing personas with stimulus + brand-voice context…',
+    'Running questionnaire across cohort (temp = 0)…',
+    'Codifying open-ends into themed positives / negatives…',
+    'Computing Resonance scorecard + Concept Score…',
+    'Generating strategic recommendations…',
+    'Finalizing PPT-ready report…',
+  ]
+  document.getElementById('runBtn')?.addEventListener('click', () => {
+    const btn = document.getElementById('runBtn')
+    const lbl = document.getElementById('runLabel')
+    const prog = document.getElementById('runProgress')
+    const stage = document.getElementById('runStage')
+    const done = document.getElementById('runDone')
+    btn.disabled = true; btn.style.opacity = .6
+    lbl.textContent = 'Running…'
+    prog.classList.remove('hidden')
+    done.classList.add('hidden')
+    let i = 0
+    const tick = () => {
+      stage.textContent = stages[i] + ' (' + Math.round((i / stages.length) * 100) + '%)'
+      i++
+      if (i < stages.length) {
+        setTimeout(tick, 700 + Math.random() * 600)
+      } else {
+        stage.textContent = 'Complete · 200 / 200 respondents'
+        prog.classList.add('hidden')
+        done.classList.remove('hidden')
+        lbl.textContent = 'Run another →'
+        btn.disabled = false; btn.style.opacity = 1
+        document.getElementById('sample')?.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+    setTimeout(tick, 400)
+  })
+
+  // ── Live count ticker ───────────────────────────────────────
+  let live = 142
+  const liveEl = document.getElementById('liveCount')
+  setInterval(() => { live += Math.floor(Math.random() * 3) + 1; if (liveEl) liveEl.textContent = live.toLocaleString() }, 4500)
+
+  // ── Year ────────────────────────────────────────────────────
+  document.getElementById('year').textContent = new Date().getFullYear()
+</script>
+</body>
+</html>
