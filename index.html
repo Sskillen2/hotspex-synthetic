@@ -1189,6 +1189,7 @@
         <!-- Run -->
         <button id="runBtn" class="btn-primary w-full mt-7 inline-flex items-center justify-center gap-2">
           <span id="runLabel">Run synthetic test →</span>
+          <span id="runLockIcon" class="text-xs opacity-70" aria-hidden>🔒</span>
         </button>
 
         <div id="runProgress" class="hidden mt-4">
@@ -1544,6 +1545,41 @@
   </div>
 </footer>
 
+<!-- ─────────────────  Password gate modal  ───────────────── -->
+<div id="gateModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-ink/80 backdrop-blur-sm">
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-glow border border-black/5 overflow-hidden">
+    <div class="hot-gradient h-1.5"></div>
+    <div class="p-7">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="chip bg-hot/10 text-hot text-[10px] tracking-widest">RESTRICTED ACCESS</span>
+      </div>
+      <h3 class="font-display font-bold text-2xl">Authenticate to launch a study</h3>
+      <p class="text-sm text-ink-500 mt-2 leading-relaxed">
+        Synthetic study runs are gated to invited collaborators during private beta.
+        Enter your access password to continue.
+      </p>
+      <form id="gateForm" class="mt-5 space-y-3" autocomplete="off">
+        <input
+          id="gatePassword"
+          type="password"
+          class="input"
+          placeholder="Access password"
+          autocomplete="current-password"
+          required
+        />
+        <div id="gateError" class="hidden text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-3"></div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" id="gateCancel" class="flex-1 px-4 py-3 rounded-xl border border-black/10 text-sm font-medium hover:bg-surface">Cancel</button>
+          <button type="submit" id="gateSubmit" class="flex-1 btn-primary py-3 text-sm">Unlock →</button>
+        </div>
+      </form>
+      <p class="text-[10px] text-ink-300 mt-4 text-center">
+        Don't have access? <a href="mailto:hello@hotspex.com?subject=Hotspex%20Synthetic%20-%20access%20request" class="text-hot font-semibold">Request a workspace →</a>
+      </p>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── Reveal on scroll ────────────────────────────────────────
   const io = new IntersectionObserver((entries) => {
@@ -1642,7 +1678,66 @@
     'Generating strategic recommendations…',
     'Finalizing PPT-ready report…',
   ]
-  document.getElementById('runBtn')?.addEventListener('click', () => {
+  // ── Password gate (client-side soft gate) ──────────────────
+  // SHA-256 hash of the access password. Client-side gates are easily bypassed
+  // by anyone who view-sources, so this is a "are you serious?" filter, not security.
+  // For real auth, swap for a Netlify Function that validates server-side.
+  const GATE_HASH = 'f91bc5e40613290361afec770c0ad4a0f47533483ee3e56a4e2b9df0d8c82dbd'
+  async function sha256(s) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+  function isUnlocked() { return sessionStorage.getItem('hsx_unlocked') === '1' }
+  function setUnlocked() {
+    sessionStorage.setItem('hsx_unlocked', '1')
+    const lk = document.getElementById('runLockIcon'); if (lk) lk.style.display = 'none'
+  }
+  if (isUnlocked()) {
+    const lk = document.getElementById('runLockIcon'); if (lk) lk.style.display = 'none'
+  }
+  function openGate() {
+    const m = document.getElementById('gateModal')
+    m.classList.remove('hidden'); m.classList.add('flex')
+    document.body.style.overflow = 'hidden'
+    setTimeout(() => document.getElementById('gatePassword')?.focus(), 50)
+  }
+  function closeGate() {
+    const m = document.getElementById('gateModal')
+    m.classList.add('hidden'); m.classList.remove('flex')
+    document.body.style.overflow = ''
+    document.getElementById('gateError').classList.add('hidden')
+    document.getElementById('gatePassword').value = ''
+  }
+  document.getElementById('gateCancel')?.addEventListener('click', closeGate)
+  document.getElementById('gateModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'gateModal') closeGate()
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('gateModal').classList.contains('hidden')) closeGate()
+  })
+  document.getElementById('gateForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const pw = document.getElementById('gatePassword').value
+    const err = document.getElementById('gateError')
+    const submit = document.getElementById('gateSubmit')
+    err.classList.add('hidden')
+    submit.disabled = true; submit.textContent = 'Checking…'
+    try {
+      const h = await sha256(pw)
+      if (h === GATE_HASH) {
+        setUnlocked()
+        closeGate()
+        startRun()
+      } else {
+        err.textContent = 'Incorrect password. Email hello@hotspex.com if you need access.'
+        err.classList.remove('hidden')
+      }
+    } finally {
+      submit.disabled = false; submit.textContent = 'Unlock →'
+    }
+  })
+
+  function startRun() {
     const btn = document.getElementById('runBtn')
     const lbl = document.getElementById('runLabel')
     const prog = document.getElementById('runProgress')
@@ -1668,6 +1763,11 @@
       }
     }
     setTimeout(tick, 400)
+  }
+
+  document.getElementById('runBtn')?.addEventListener('click', () => {
+    if (isUnlocked()) { startRun(); return }
+    openGate()
   })
 
   // ── Live count ticker ───────────────────────────────────────
